@@ -1,7 +1,6 @@
+import math
 import pygame
 
-
-# Defining the Tileset class
 
 class Tileset:
     TERRAIN = 0
@@ -42,4 +41,4 @@ class Tileset:
     def screen_to_world(self, screen, screen_x, screen_y, center_x, center_y):
         world_x = (screen_x - (screen.get_width() - self._tile_size) / 2) / self._tile_size + center_x
         world_y = (screen_y - (screen.get_height() - self._tile_size) / 2) / self._tile_size + center_y
-        return int(world_x), int(world_y)
+        return math.floor(world_x), math.floor(world_y)

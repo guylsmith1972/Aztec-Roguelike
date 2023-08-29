@@ -47,10 +47,10 @@ class World:
         self.npc_positions = new_npc_positions
         self.regions = self.get_relevant_regions()
 
-    def render(self, screen, center_x, center_y, tileset):
+    def render(self, screen, center_x, center_y, tileset, spritesheets):
         # Render regions
         for region in self.regions:
-            region.render(screen, center_x, center_y, tileset)
+            region.render(screen, center_x, center_y, tileset, spritesheets)
 
         # Render creatures:
         for creature in self.creatures:
@@ -59,7 +59,20 @@ class World:
             tileset.render(screen, tileset.CREATURE, index, position[0], position[1], self.player_position[0], self.player_position[1])
             
         # Render player:
-        tileset.render(screen, tileset.CREATURE, 0, self.player_position[0], self.player_position[1], self.player_position[0], self.player_position[1])
+        spritesheets['avatars'].render(screen, 0, self.player_position[0], self.player_position[1], self.player_position[0], self.player_position[1])
+        
+    def is_passable_at(self, world_x, world_y):
+        for region in self.regions:
+            if region.contains_position(world_x, world_y):
+                if not region.is_passable_at(world_x, world_y):
+                    return False
+                
+        for creature in self.creatures:
+            position = creature[1]
+            if position[0] == world_x and position[1] == world_y:
+                return False
+            
+        return True
 
     def add_creature(self, name, x, y):
         """Add a creature to the region."""

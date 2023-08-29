@@ -67,8 +67,16 @@ class Region:
             y = j + self.world_y
             for i in range(self.size):
                 x = i + self.world_x
-                n = opensimplex.noise2(x*5, y*5)
-                row.append(0 if n < 0 else 1)
+                n = opensimplex.noise2(x / 15.0, y / 15.0)
+                if n < -0.8:
+                    row.append(1)
+                elif n < -0.6:
+                    row.append(6)
+                elif n < 0.2:
+                    row.append(0)
+                else:
+                    row.append(8)
+            
             terrain.append(row)
 
         # sprinkle random walls around the map
@@ -79,11 +87,11 @@ class Region:
 
         return terrain
 
-    def render(self, screen, center_x, center_y, tileset):
+    def render(self, screen, center_x, center_y, tileset, spritesheets):
         # Calculate screen's top-left and bottom-right world coordinates
         screen_left, screen_top = tileset.screen_to_world(screen, 0, 0, center_x, center_y)
-        screen_right, screen_bottom = tileset.screen_to_world(screen, screen.get_width() - 1, screen.get_height() - 1, center_x, center_y)
-    
+        screen_right, screen_bottom = tileset.screen_to_world(screen, screen.get_width() + tileset.tile_size() - 1, screen.get_height() + tileset.tile_size() - 1, center_x, center_y)
+
         # Calculate region's top-left and bottom-right world coordinates
         region_left = self.world_x
         region_right = self.world_x + self.size
@@ -95,6 +103,8 @@ class Region:
         overlap_right = min(screen_right, region_right)
         overlap_top = max(screen_top, region_top)
         overlap_bottom = min(screen_bottom, region_bottom)
+        
+        terrain_spritesheet = spritesheets['terrain']
     
         # Render the overlapping terrain        
         terrain_slice = [
@@ -103,7 +113,7 @@ class Region:
         ]
         for yy, row in enumerate(terrain_slice):
             for xx, tile_index in enumerate(row):
-                tileset.render(screen, tileset.TERRAIN, tile_index, self.world_x + xx + overlap_left - self.world_x, self.world_y + yy + overlap_top - self.world_y, center_x, center_y)
+                terrain_spritesheet.render(screen, tile_index, self.world_x + xx + overlap_left - self.world_x, self.world_y + yy + overlap_top - self.world_y, center_x, center_y)
     
         # Render features       
         features_to_render = [(index, (pos[0] + self.world_x, pos[1] + self.world_y)) for index, pos in self.features if overlap_left <= pos[0] + self.world_x < overlap_right and overlap_top <= pos[1] + self.world_y < overlap_bottom]
@@ -117,6 +127,15 @@ class Region:
 
     def contains_position(self, x, y):
         return self.world_x <= x < self.world_x + self.size and self.world_y <= y < self.world_y + self.size
+    
+    def is_passable_at(self, world_x, world_y):
+        x = world_x - self.world_x
+        y = world_y - self.world_y
+        for feature in self.features:
+            position = feature[1]
+            if position[0] == x and position[1] == y:
+                return False
+        return True
  
     def is_overlapping_with_screen(self, screen, center_x, center_y, tileset):
         # Calculate screen's top-left and bottom-right world coordinates

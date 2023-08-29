@@ -1,11 +1,22 @@
 import configuration
 import player
 import pygame
+import spritesheet
 import tileset
+import utility
 import world
 
 
+def get_assets(tile_size):
+    new_tileset = tileset.Tileset(tile_size)
+    new_spritesheets = {
+        'terrain': spritesheet.SpriteSheet('Assets/Terrain', tile_size, tile_size),
+        'avatars': spritesheet.SpriteSheet('Assets/Avatars', tile_size, tile_size)
+    }
+    return new_tileset, new_spritesheets
+
 def main():
+    tile_sizes = [16, 20, 24, 32, 40, 48, 64, 80, 96, 128]
     # Initialize pygame
     pygame.init()
 
@@ -13,7 +24,10 @@ def main():
     initial_npc_positions = []
     game_world = world.World(game_player.get_position(), initial_npc_positions, configuration.get('region_size'))
     game_player.world = game_world
-    current_tileset = tileset.Tileset(16)
+    
+    current_tile_size = configuration.get('TILE_SIZE')
+    
+    current_tileset, spritesheets = get_assets(current_tile_size)
 
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     pygame.display.set_caption('Roguelike World')
@@ -40,6 +54,18 @@ def main():
                     if direction not in movement_stack:
                         movement_stack.append(direction)
                     current_movement = movement_stack[-1]
+                elif event.key == pygame.K_KP_MINUS:
+                    new_tile_size = utility.find_before(tile_sizes, current_tile_size)
+                    if new_tile_size != current_tile_size:
+                        current_tile_size = new_tile_size
+                        current_tileset, spritesheets = get_assets(current_tile_size)
+                        configuration.set('TILE_SIZE', current_tile_size)
+                elif event.key == pygame.K_KP_PLUS:
+                    new_tile_size = utility.find_after(tile_sizes, current_tile_size)
+                    if new_tile_size != current_tile_size:
+                        current_tile_size = new_tile_size
+                        current_tileset, spritesheets = get_assets(current_tile_size)
+                        configuration.set('TILE_SIZE', current_tile_size)
 
             if event.type == pygame.KEYUP:
                 # If the key released is a movement key, remove its corresponding movement from the stack
@@ -59,7 +85,7 @@ def main():
         current_player_position = game_player.get_position()
         game_world.update_positions(current_player_position, initial_npc_positions)
 
-        game_world.render(screen, current_player_position[0], current_player_position[1], current_tileset)
+        game_world.render(screen, current_player_position[0], current_player_position[1], current_tileset, spritesheets)
 
         pygame.display.flip()
 

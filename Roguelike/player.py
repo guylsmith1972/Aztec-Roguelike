@@ -13,8 +13,11 @@ class Player:
         The position changes are not wrapped around in this version since the world 
         dynamically loads relevant regions.
         """
-        self.world_x += dx
-        self.world_y += dy
+        new_x = self.world_x + dx
+        new_y = self.world_y + dy
+        if self.world.is_passable_at(new_x, new_y):
+            self.world_x = new_x
+            self.world_y = new_y
 
     def get_position(self):
         """

@@ -27,11 +27,33 @@
     <Compile Include="player.py" />
     <Compile Include="region.py" />
     <Compile Include="main.py" />
+    <Compile Include="spritesheet.py" />
     <Compile Include="tileset.py" />
+    <Compile Include="utility.py" />
     <Compile Include="world.py" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Raw\Terrain\00009-3862780871.png" />
+    <Content Include="Assets\Raw\Terrain\00014-579761172.png" />
+    <Content Include="Assets\Raw\Terrain\00017-3099483335.png" />
+    <Content Include="Assets\Raw\Terrain\00018-3099483336.png" />
+    <Content Include="Assets\Raw\Terrain\00025-3099483343.png" />
+    <Content Include="Assets\Raw\Terrain\00031-2832917864.png" />
+    <Content Include="Assets\Raw\Terrain\00037-2832917870.png" />
+    <Content Include="Assets\Raw\Terrain\00039-1627956462.png" />
+    <Content Include="Assets\Raw\Terrain\00045-2832917878.png" />
+    <Content Include="Assets\Raw\Terrain\00047-462716411.png" />
+    <Content Include="Assets\Raw\Terrain\00086-540790288.png" />
+    <Content Include="Assets\Raw\Terrain\00097-540790299.png" />
+    <Content Include="Assets\Raw\Terrain\00111-540790313.png" />
+    <Content Include="Assets\Spritesheets\terrain_sheet.png" />
     <Content Include="config.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets\" />
+    <Folder Include="Assets\Raw\" />
+    <Folder Include="Assets\Raw\Terrain\" />
+    <Folder Include="Assets\Spritesheets\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
