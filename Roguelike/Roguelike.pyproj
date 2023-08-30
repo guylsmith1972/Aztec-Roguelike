@@ -25,7 +25,7 @@
     <Compile Include="inventory.py" />
     <Compile Include="item.py" />
     <Compile Include="player.py" />
-    <Compile Include="region.py" />
+    <Compile Include="terrain_chunk.py" />
     <Compile Include="main.py" />
     <Compile Include="spritesheet.py" />
     <Compile Include="terrain.py" />

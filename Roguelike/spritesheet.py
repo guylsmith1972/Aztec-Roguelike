@@ -63,6 +63,9 @@ class SpriteSheet:
     
     def get_name(self, tile_index):
         return self.sheet_map.inverse[tile_index]
+    
+    def get_all_terrain_names(self):
+        return self.sheet_map.keys()
 
     def render(self, screen, tile_index, world_x, world_y, center_x, center_y):
         screen_x = (world_x - center_x) * self.tile_width + (screen.get_width() - self.tile_width) / 2

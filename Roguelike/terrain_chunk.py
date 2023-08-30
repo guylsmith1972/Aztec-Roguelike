@@ -1,6 +1,5 @@
 from collections import deque
-import math
-import random
+from tkinter import SE
 from item import Item
 
 import configuration
@@ -9,52 +8,53 @@ import opensimplex
 import pygame
 
 
-# Vectorize the get_tile_index function
+# Vectorized version of the get_tile_index function
 _vectorized_get_tile_index = None
 
 
-class Region:
-    _region_cache = {}  # Cache for regions
-    _region_validity = {}  # Validity status of regions
-    _invalid_regions_LRU = deque()  # LRU queue for invalid regions
+class TerrainChunk:
+    _terrain_chunk_cache = {}  # Cache for terrain_chunks
+    _terrain_chunk_validity = {}  # Validity status of terrain_chunks
+    _invalid_terrain_chunks_LRU = deque()  # LRU queue for invalid terrain_chunks
 
     def __init__(self, world_x, world_y, size, world):
         self.world = world
         self.world_x = world_x
         self.world_y = world_y
         self.size = size
-        self.items = []  # List of movable objects in the region
-        self.features = []  # List of immobile objects in the region
+        self.items = []  # List of movable objects in the terrain_chunk
+        self.features = []  # List of immobile objects in the terrain_chunk
         self._dirty = True  # True if the terrain_image needs to be generated
         self.prerendered_image = None
         self.tile_width = world.get_spritesheets()['terrain'].tile_width
         self.tile_height = world.get_spritesheets()['terrain'].tile_height
-        self.terrain_indices = self.generate_terrain()
+        self.terrain_indices = None
+        self.generate_terrain()
         
     @staticmethod
     def generate_vectorized_getter(spritesheet):
         def generate_getter():
             # Hardcode the values for each tile name
-            granite_val = spritesheet.get_index('granite')
-            stones_medium_val = spritesheet.get_index('stones-medium')
-            stones_small_val = spritesheet.get_index('stones-small')
-            dirt_val = spritesheet.get_index('dirt')
-            grass_val = spritesheet.get_index('grass')
-            grass_thick_val = spritesheet.get_index('grass-thick')
+            granite= spritesheet.get_index('granite')
+            stones_medium= spritesheet.get_index('stones-medium')
+            stones_small= spritesheet.get_index('stones-small')
+            dirt= spritesheet.get_index('dirt')
+            grass= spritesheet.get_index('grass')
+            grass_thick= spritesheet.get_index('grass-thick')
     
             def corrected_optimized_get_tile_name(n):
                 if n < -0.9:
-                    return granite_val
+                    return granite
                 elif n < -0.8:
-                    return stones_medium_val
+                    return stones_medium
                 elif n < -0.7:
-                    return stones_small_val
+                    return stones_small
                 elif n < -0.6:
-                    return dirt_val
+                    return dirt
                 elif n < 0.2:
-                    return grass_val
+                    return grass
                 else:
-                    return grass_thick_val
+                    return grass_thick
     
             return corrected_optimized_get_tile_name
         
@@ -63,45 +63,48 @@ class Region:
 
     @classmethod
     def get_or_create(cls, world_x, world_y, size, world):
-        """Retrieve region from cache or create a new one if it doesn't exist."""
+        """Retrieve terrain_chunk from cache or create a new one if it doesn't exist."""
         key = (world_x, world_y, size)
-        if key in cls._region_cache:
-            # Mark the region as valid if it was previously invalid
-            cls._region_validity[key] = True
-            if key in cls._invalid_regions_LRU:
-                cls._invalid_regions_LRU.remove(key)
+        if key in cls._terrain_chunk_cache:
+            # Mark the terrain_chunk as valid if it was previously invalid
+            cls._terrain_chunk_validity[key] = True
+            if key in cls._invalid_terrain_chunks_LRU:
+                cls._invalid_terrain_chunks_LRU.remove(key)
         else:
-            if len(cls._invalid_regions_LRU) > configuration.get('max_invalid_regions'):
-                # Remove the least-recently-used invalid region
-                oldest_invalid_key = cls._invalid_regions_LRU.popleft()
-                del cls._region_cache[oldest_invalid_key]
-                del cls._region_validity[oldest_invalid_key]
+            if len(cls._invalid_terrain_chunks_LRU) > configuration.get('max_invalid_terrain_chunks'):
+                # Remove the least-recently-used invalid terrain_chunk
+                oldest_invalid_key = cls._invalid_terrain_chunks_LRU.popleft()
+                del cls._terrain_chunk_cache[oldest_invalid_key]
+                del cls._terrain_chunk_validity[oldest_invalid_key]
             
-            cls._region_cache[key] = cls(world_x, world_y, size, world)
-            cls._region_validity[key] = True
+            cls._terrain_chunk_cache[key] = cls(world_x, world_y, size, world)
+            cls._terrain_chunk_validity[key] = True
         
-        return cls._region_cache[key]
+        return cls._terrain_chunk_cache[key]
 
     @classmethod
     def mark_as_invalid(cls, world_x, world_y, size):
-        """Mark a region as invalid."""
+        """Mark a terrain_chunk as invalid."""
         key = (world_x, world_y, size)
-        if key in cls._region_cache:
-            cls._region_validity[key] = False
-            cls._invalid_regions_LRU.append(key)
+        if key in cls._terrain_chunk_cache:
+            cls._terrain_chunk_validity[key] = False
+            cls._invalid_terrain_chunks_LRU.append(key)
 
     def __hash__(self):
         return hash((self.world_x, self.world_y, self.size))
 
     def __eq__(self, other):
-        if isinstance(other, Region):
+        if isinstance(other, TerrainChunk):
             return self.world_x == other.world_x and self.world_y == other.world_y and self.size == other.size
         return False
+    
+    def set_terrain_at(self, x, y, terrain_index):
+        self.terrain_indices[y][x] = terrain_index
 
     def generate_terrain(self):
         terrain_spritesheet = self.world.get_spritesheets()['terrain']
         if _vectorized_get_tile_index is None:
-            Region.generate_vectorized_getter(terrain_spritesheet)
+            TerrainChunk.generate_vectorized_getter(terrain_spritesheet)
             
         # Create numpy arrays for x and y coordinates
         x_coords = np.arange(self.world_x, self.world_x + self.size) / 15.0
@@ -111,12 +114,10 @@ class Region:
         noise_values = opensimplex.noise2array(x_coords, y_coords)
 
         # Use the vectorized function on the entire noise_values array
-        terrain_indices = _vectorized_get_tile_index(noise_values)
+        self.terrain_indices = _vectorized_get_tile_index(noise_values)
         
-        # add a randomly-placed wall
-        terrain_indices[math.floor(random.random() * self.size)][math.floor(random.random() * self.size)] = terrain_spritesheet.get_index('wall')
-        
-        return terrain_indices
+        # Call into the world object to allow it to modify the chunk
+        self.world.modify_chunk(self)
 
     def prerender(self):
         terrain_spritesheet = self.world.get_spritesheets()['terrain']
@@ -125,26 +126,26 @@ class Region:
         tile_width = terrain_spritesheet.tile_width
         tile_height = terrain_spritesheet.tile_height
 
-        # Create a new surface to render the region to
+        # Create a new surface to render the terrain_chunk to
         surface_width = self.size * tile_width
         surface_height = self.size * tile_height
-        region_surface = pygame.Surface((surface_width, surface_height))
+        terrain_chunk_surface = pygame.Surface((surface_width, surface_height))
 
         # Flatten the terrain_indices for reduced indexing overhead
         flattened_indices = [index for row in self.terrain_indices for index in row]
 
-        # Render the entire region to the surface using single loop iteration
+        # Render the entire terrain_chunk to the surface using single loop iteration
         for idx, tile_index in enumerate(flattened_indices):
             x = (idx % self.size) * tile_width
             y = (idx // self.size) * tile_height
-            terrain_spritesheet.blit_to_surface(region_surface, tile_index, x, y)
+            terrain_spritesheet.blit_to_surface(terrain_chunk_surface, tile_index, x, y)
 
-        return region_surface
+        return terrain_chunk_surface
 
     def render(self, screen, center_x, center_y):
         terrain_spritesheet = self.world.get_spritesheets()['terrain']
 
-        # Check if the region needs to be prerendered
+        # Check if the terrain_chunk needs to be prerendered
         if self._dirty or self.tile_width != terrain_spritesheet.tile_width or self.tile_height != terrain_spritesheet.tile_height:
             self.prerendered_image = self.prerender()
             self._dirty = False
@@ -157,9 +158,11 @@ class Region:
     
         # Blit the prerendered image to the screen
         screen.blit(self.prerendered_image, (screen_x, screen_y))
+        
+        # TODO
 
     def get_terrain_index_at(self, world_x, world_y):
-        # Calculate relative coordinates within the region
+        # Calculate relative coordinates within the terrain_chunk
         rel_x = world_x - self.world_x
         rel_y = world_y - self.world_y
         print(f'fetching index from {rel_x}, {rel_y}')

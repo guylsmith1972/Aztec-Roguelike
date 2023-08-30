@@ -11,7 +11,7 @@ class Player:
         """
         Adjusts the player's position based on the given dx and dy offsets. 
         The position changes are not wrapped around in this version since the world 
-        dynamically loads relevant regions.
+        dynamically loads relevant terrain_chunks.
         """
         new_x = self.world_x + dx
         new_y = self.world_y + dy

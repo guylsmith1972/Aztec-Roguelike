@@ -15,8 +15,8 @@ _default_config = {
         pygame.K_KP2: [0, 1],
         pygame.K_KP3: [1, 1]
     },
-    "max_invalid_regions": 100,
-    "region_size": 16,
+    "max_invalid_terrain_chunks": 100,
+    "terrain_chunk_size": 16,
     "tile_size": 20
 }
 

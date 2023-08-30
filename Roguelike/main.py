@@ -24,7 +24,7 @@ def main():
     spritesheets = get_assets(current_tile_size)
 
     game_player = player.Player(0, 0)
-    game_world = world.World(screen, game_player.get_position(), configuration.get('region_size'), spritesheets)
+    game_world = world.World(screen, game_player.get_position(), configuration.get('terrain_chunk_size'), spritesheets)
     game_player.world = game_world
     
     pygame.display.set_caption('Roguelike World')
