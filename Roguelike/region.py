@@ -1,4 +1,6 @@
 from collections import deque
+import math
+import random
 from item import Item
 
 import configuration
@@ -7,26 +9,14 @@ import opensimplex
 import pygame
 
 
-# Simple terrain decider
-def _get_tile_index(n):
-    if n < -0.8:
-        return 1
-    elif n < -0.6:
-        return 6
-    elif n < 0.2:
-        return 0
-    else:
-        return 8
-
 # Vectorize the get_tile_index function
-_vectorized_get_tile_index = np.vectorize(_get_tile_index)
+_vectorized_get_tile_index = None
 
 
 class Region:
     _region_cache = {}  # Cache for regions
     _region_validity = {}  # Validity status of regions
     _invalid_regions_LRU = deque()  # LRU queue for invalid regions
-    MAX_INVALID_REGIONS = 10  # Threshold for invalid regions
 
     def __init__(self, world_x, world_y, size, world):
         self.world = world
@@ -40,6 +30,36 @@ class Region:
         self.tile_width = world.get_spritesheets()['terrain'].tile_width
         self.tile_height = world.get_spritesheets()['terrain'].tile_height
         self.terrain_indices = self.generate_terrain()
+        
+    @staticmethod
+    def generate_vectorized_getter(spritesheet):
+        def generate_getter():
+            # Hardcode the values for each tile name
+            granite_val = spritesheet.get_index('granite')
+            stones_medium_val = spritesheet.get_index('stones-medium')
+            stones_small_val = spritesheet.get_index('stones-small')
+            dirt_val = spritesheet.get_index('dirt')
+            grass_val = spritesheet.get_index('grass')
+            grass_thick_val = spritesheet.get_index('grass-thick')
+    
+            def corrected_optimized_get_tile_name(n):
+                if n < -0.9:
+                    return granite_val
+                elif n < -0.8:
+                    return stones_medium_val
+                elif n < -0.7:
+                    return stones_small_val
+                elif n < -0.6:
+                    return dirt_val
+                elif n < 0.2:
+                    return grass_val
+                else:
+                    return grass_thick_val
+    
+            return corrected_optimized_get_tile_name
+        
+        global _vectorized_get_tile_index
+        _vectorized_get_tile_index = np.vectorize(generate_getter())
 
     @classmethod
     def get_or_create(cls, world_x, world_y, size, world):
@@ -51,7 +71,7 @@ class Region:
             if key in cls._invalid_regions_LRU:
                 cls._invalid_regions_LRU.remove(key)
         else:
-            if len(cls._invalid_regions_LRU) > configuration.get('MAX_INVALID_REGIONS'):
+            if len(cls._invalid_regions_LRU) > configuration.get('max_invalid_regions'):
                 # Remove the least-recently-used invalid region
                 oldest_invalid_key = cls._invalid_regions_LRU.popleft()
                 del cls._region_cache[oldest_invalid_key]
@@ -79,6 +99,10 @@ class Region:
         return False
 
     def generate_terrain(self):
+        terrain_spritesheet = self.world.get_spritesheets()['terrain']
+        if _vectorized_get_tile_index is None:
+            Region.generate_vectorized_getter(terrain_spritesheet)
+            
         # Create numpy arrays for x and y coordinates
         x_coords = np.arange(self.world_x, self.world_x + self.size) / 15.0
         y_coords = np.arange(self.world_y, self.world_y + self.size) / 15.0
@@ -87,7 +111,12 @@ class Region:
         noise_values = opensimplex.noise2array(x_coords, y_coords)
 
         # Use the vectorized function on the entire noise_values array
-        return _vectorized_get_tile_index(noise_values)
+        terrain_indices = _vectorized_get_tile_index(noise_values)
+        
+        # add a randomly-placed wall
+        terrain_indices[math.floor(random.random() * self.size)][math.floor(random.random() * self.size)] = terrain_spritesheet.get_index('wall')
+        
+        return terrain_indices
 
     def prerender(self):
         terrain_spritesheet = self.world.get_spritesheets()['terrain']
@@ -133,6 +162,7 @@ class Region:
         # Calculate relative coordinates within the region
         rel_x = world_x - self.world_x
         rel_y = world_y - self.world_y
+        print(f'fetching index from {rel_x}, {rel_y}')
         return self.terrain_indices[rel_y][rel_x]
 
     def contains_position(self, x, y):

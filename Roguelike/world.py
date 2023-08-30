@@ -1,10 +1,12 @@
 import math
 import pygame
 from region import Region
+import terrain
 
 
 class World:
     def __init__(self, screen, player_position, region_size, spritesheets):
+        self.terrain_types = terrain.Terrain(spritesheets['terrain'])
         self.player_position = player_position
         self.creatures = []  # List of creatures in the world
         self.spritesheets = spritesheets
@@ -14,6 +16,7 @@ class World:
         
     def set_spritesheets(self, spritesheets):
         self.spritesheets = spritesheets
+        self.terrain_types = terrain.Terrain(spritesheets['terrain'])
             
     def get_spritesheets(self):
         return self.spritesheets
@@ -75,7 +78,9 @@ class World:
     def is_passable_at(self, world_x, world_y):
         for region in self.regions:
             if region.contains_position(world_x, world_y):
-                if not region.is_passable_at(world_x, world_y):
+                terrain_index = region.get_terrain_index_at(world_x, world_y)
+                print(f'world x,y: {world_x}, {world_y} produced index {terrain_index}')
+                if not self.terrain_types.is_passable(terrain_index):
                     return False
                 
         for creature in self.creatures:

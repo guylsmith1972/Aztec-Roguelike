@@ -4,7 +4,7 @@ import pygame
 
 # Default configuration values
 _default_config = {
-    "MOVES_PER_SECOND": 10,
+    "moves_per_second": 10,
     "key_to_movement": {
         pygame.K_KP7: [-1, -1],
         pygame.K_KP8: [0, -1],
@@ -15,8 +15,9 @@ _default_config = {
         pygame.K_KP2: [0, 1],
         pygame.K_KP3: [1, 1]
     },
-    "MAX_INVALID_REGIONS": 10,
-    "region_size": 96
+    "max_invalid_regions": 100,
+    "region_size": 16,
+    "tile_size": 20
 }
 
 _config = None

@@ -1,10 +1,10 @@
+import bidict
+import json
 import math
 import os
 import pygame
 
 from PIL import Image
-import numpy as np
-from sklearn.cluster import KMeans
 
 
 class SpriteSheet:
@@ -14,10 +14,11 @@ class SpriteSheet:
         self.tile_height = tile_height
         self.sheet_path = self._find_or_create_sheet()
         self.sheet_image = pygame.image.load(self.sheet_path)
+        self.sheet_map = bidict.bidict(json.load(open(f'{directory}/spritemap.json', 'r')))
 
     def _create_image_grid(self, directory, output_path):
         # Step 1: Collect all image paths in the directory
-        image_paths = [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith(('.png', '.jpg', '.jpeg')) and not f.startswith('spritesheet_')]
+        image_paths = [os.path.join(f'{directory}/originals', f) for f in os.listdir(f'{directory}/originals') if f.endswith(('.png', '.jpg', '.jpeg'))]
     
         # Step 2: Load each image and scale it down
         scaled_images = [Image.open(path).resize((self.tile_width, self.tile_height)) for path in image_paths]
@@ -38,6 +39,13 @@ class SpriteSheet:
     
         # Step 6: Save the final image
         output_image.save(output_path)
+        
+        # Step 7: Save the mapping to a JSON file
+        filename_to_index = {}
+        for i, path in enumerate(image_paths):
+            filename_to_index[os.path.basename(path).split('.')[0]] = i
+        with open(os.path.join(directory, 'spritemap.json'), 'w') as json_file:
+            json.dump(filename_to_index, json_file, indent=2)
 
     def _find_or_create_sheet(self):
         # Check for an existing _sheet.png image
@@ -49,19 +57,19 @@ class SpriteSheet:
         sheet_path = os.path.join(self.directory, f'spritesheet_{self.tile_width}_{self.tile_height}.png')
         self._create_image_grid(self.directory, sheet_path)
         return sheet_path
+    
+    def get_index(self, tile_name):
+        return self.sheet_map[tile_name] if tile_name in self.sheet_map else -1
+    
+    def get_name(self, tile_index):
+        return self.sheet_map.inverse[tile_index]
 
     def render(self, screen, tile_index, world_x, world_y, center_x, center_y):
         screen_x = (world_x - center_x) * self.tile_width + (screen.get_width() - self.tile_width) / 2
         screen_y = (world_y - center_y) * self.tile_height + (screen.get_height() - self.tile_height) / 2
-        cols = self.sheet_image.get_width() // self.tile_width
-        row = tile_index // cols
-        col = tile_index % cols
 
-        # Determine the source rectangle for the tile
-        source_rect = pygame.Rect(col * self.tile_width, row * self.tile_height, self.tile_width, self.tile_height)
-        
-        # Blit (copy) the tile from the sprite sheet onto the screen at the specified location
-        screen.blit(self.sheet_image, (screen_x, screen_y), source_rect)
+        # Use blit_to_surface() to render the tile on the screen
+        self.blit_to_surface(screen, tile_index, screen_x, screen_y)
 
     def blit_to_surface(self, surface, tile_index, x, y):
         cols = self.sheet_image.get_width() // self.tile_width

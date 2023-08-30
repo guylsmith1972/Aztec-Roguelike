@@ -1,0 +1,11 @@
+{
+  "cobble-colored": 0,
+  "dirt": 1,
+  "granite": 2,
+  "grass-thick": 3,
+  "grass": 4,
+  "herringbone": 5,
+  "stones-medium": 6,
+  "stones-small": 7,
+  "wall": 8
+}

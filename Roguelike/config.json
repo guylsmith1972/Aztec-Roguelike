@@ -1,5 +1,5 @@
 {
-    "MOVES_PER_SECOND": 20,
+    "moves_per_second": 20,
     "key_to_movement": {
         "1073741919": [
             -1,
@@ -34,7 +34,7 @@
             1
         ]
     },
-    "MAX_INVALID_REGIONS": 0,
-    "region_size": 24,
-    "TILE_SIZE": 20
+    "max_invalid_regions": 100,
+    "region_size": 16,
+    "tile_size": 16
 }

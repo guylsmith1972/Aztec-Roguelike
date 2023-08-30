@@ -28,7 +28,7 @@
     <Compile Include="region.py" />
     <Compile Include="main.py" />
     <Compile Include="spritesheet.py" />
-    <Compile Include="tileset.py" />
+    <Compile Include="terrain.py" />
     <Compile Include="utility.py" />
     <Compile Include="world.py" />
   </ItemGroup>
