@@ -1,37 +1,49 @@
+import math
 import pygame
 from region import Region
 
 
 class World:
-    def __init__(self, player_position, npc_positions, region_size):
+    def __init__(self, screen, player_position, region_size, spritesheets):
         self.player_position = player_position
-        self.npc_positions = npc_positions
+        self.creatures = []  # List of creatures in the world
+        self.spritesheets = spritesheets
         self.region_size = region_size
         self.regions = set()  # We need to create an empty set first because calling self.get_relevant_regions() needs this to be defined as a set instead of as None
-        self.regions = self.get_relevant_regions()
-        self.creatures = []  # List of creatures in the world
+        self.regions = self.get_relevant_regions(screen)
+        
+    def set_spritesheets(self, spritesheets):
+        self.spritesheets = spritesheets
+            
+    def get_spritesheets(self):
+        return self.spritesheets
 
-    def get_relevant_regions(self):
+    def get_relevant_regions(self, screen):
         """Generate a list of relevant regions based on the current player and NPC positions."""
         new_relevant_regions = set()
+
+        region_width = self.region_size * self.spritesheets['terrain'].tile_width
+        region_height = self.region_size * self.spritesheets['terrain'].tile_height
 
         # Find the regions relevant to the player's position
         player_region_x = self.player_position[0] // self.region_size
         player_region_y = self.player_position[1] // self.region_size
-        for dx in [-1, 0, 1]:
-            for dy in [-1, 0, 1]:
+        for dx in range(-math.floor(screen.get_width() / region_width / 2) - 1, math.ceil(screen.get_width() / region_width / 2) + 1):
+            for dy in range(-math.floor(screen.get_height() / region_height / 2) - 1, math.ceil(screen.get_height() / region_height / 2) + 1):
                 new_relevant_regions.add(Region.get_or_create((player_region_x + dx) * self.region_size,
                                                               (player_region_y + dy) * self.region_size,
-                                                              self.region_size))
+                                                              self.region_size,
+                                                              self))
 
-        # Add regions for NPCs
-        for npc_position in self.npc_positions:
-            npc_region_x = npc_position[0] // self.region_size
-            npc_region_y = npc_position[1] // self.region_size
-            new_relevant_regions.add(Region.get_or_create(npc_region_x * self.region_size,
-                                                          npc_region_y * self.region_size,
-                                                          self.region_size))
-
+        # Add regions for creatures
+        for creature_position in self.creatures:
+            creature_region_x = creature_position[0] // self.region_size
+            creature_region_y = creature_position[1] // self.region_size
+            new_relevant_regions.add(Region.get_or_create(creature_region_x * self.region_size,
+                                                          creature_region_y * self.region_size,
+                                                          self.region_size,
+                                                          self))
+            
         # Mark previous regions that are no longer relevant as invalid
         current_regions_set = set(self.regions)
         for region in current_regions_set - new_relevant_regions:
@@ -39,27 +51,26 @@ class World:
 
         return new_relevant_regions
 
-    def update_positions(self, new_player_position, new_npc_positions):
+    def update_positions(self, screen, new_player_position):
         """
         Update the player's and NPCs' positions, and refresh the list of relevant regions.
         """
         self.player_position = new_player_position
-        self.npc_positions = new_npc_positions
-        self.regions = self.get_relevant_regions()
+        self.regions = self.get_relevant_regions(screen)
 
-    def render(self, screen, center_x, center_y, tileset, spritesheets):
+    def render(self, screen, center_x, center_y):
         # Render regions
         for region in self.regions:
-            region.render(screen, center_x, center_y, tileset, spritesheets)
+            region.render(screen, center_x, center_y)
 
-        # Render creatures:
-        for creature in self.creatures:
-            index = creature[0]
-            position = creature[1]
-            tileset.render(screen, tileset.CREATURE, index, position[0], position[1], self.player_position[0], self.player_position[1])
+        # # Render creatures:
+        # for creature in self.creatures:
+        #     index = creature[0]
+        #     position = creature[1]
+        #     tileset.render(screen, tileset.CREATURE, index, position[0], position[1], self.player_position[0], self.player_position[1])
             
         # Render player:
-        spritesheets['avatars'].render(screen, 0, self.player_position[0], self.player_position[1], self.player_position[0], self.player_position[1])
+        self.spritesheets['avatars'].render(screen, 0, self.player_position[0], self.player_position[1], self.player_position[0], self.player_position[1])
         
     def is_passable_at(self, world_x, world_y):
         for region in self.regions:
