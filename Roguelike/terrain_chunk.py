@@ -35,12 +35,12 @@ class TerrainChunk:
     def generate_vectorized_getter(spritesheet):
         def generate_getter():
             # Hardcode the values for each tile name
-            granite= spritesheet.get_index('granite')
-            stones_medium= spritesheet.get_index('stones-medium')
-            stones_small= spritesheet.get_index('stones-small')
-            dirt= spritesheet.get_index('dirt')
-            grass= spritesheet.get_index('grass')
-            grass_thick= spritesheet.get_index('grass-thick')
+            granite = spritesheet.get_index('granite')
+            stones_medium = spritesheet.get_index('stones-medium')
+            stones_small = spritesheet.get_index('stones-small')
+            dirt = spritesheet.get_index('dirt')
+            grass = spritesheet.get_index('grass')
+            grass_thick = spritesheet.get_index('grass-thick')
     
             def corrected_optimized_get_tile_name(n):
                 if n < -0.9:
@@ -158,14 +158,11 @@ class TerrainChunk:
     
         # Blit the prerendered image to the screen
         screen.blit(self.prerendered_image, (screen_x, screen_y))
-        
-        # TODO
 
     def get_terrain_index_at(self, world_x, world_y):
         # Calculate relative coordinates within the terrain_chunk
         rel_x = world_x - self.world_x
         rel_y = world_y - self.world_y
-        print(f'fetching index from {rel_x}, {rel_y}')
         return self.terrain_indices[rel_y][rel_x]
 
     def contains_position(self, x, y):

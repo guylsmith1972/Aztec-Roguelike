@@ -77,7 +77,6 @@ class World:
         for terrain_chunk in self.terrain_chunks:
             if terrain_chunk.contains_position(world_x, world_y):
                 terrain_index = terrain_chunk.get_terrain_index_at(world_x, world_y)
-                print(f'world x,y: {world_x}, {world_y} produced index {terrain_index}')
                 if not self.terrain_types.is_passable(terrain_index):
                     return False
                 

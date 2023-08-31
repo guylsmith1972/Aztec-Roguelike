@@ -4,13 +4,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fe791785-016e-4373-ad73-cb7f79ace54a</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>main.py</StartupFile>
+    <StartupFile>voronoi2.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Roguelike</Name>
     <RootNamespace>Roguelike</RootNamespace>
+    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="configuration.py" />
+    <Compile Include="ecosystems.py" />
     <Compile Include="inventory.py" />
     <Compile Include="item.py" />
     <Compile Include="player.py" />
@@ -30,6 +32,8 @@
     <Compile Include="spritesheet.py" />
     <Compile Include="terrain.py" />
     <Compile Include="utility.py" />
+    <Compile Include="voronoi.py" />
+    <Compile Include="voronoi2.py" />
     <Compile Include="world.py" />
   </ItemGroup>
   <ItemGroup>
@@ -54,6 +58,17 @@
     <Folder Include="Assets\Raw\" />
     <Folder Include="Assets\Raw\Terrain\" />
     <Folder Include="Assets\Spritesheets\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include="env\">
+      <Id>env</Id>
+      <Version>3.10</Version>
+      <Description>env (Python 3.10 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

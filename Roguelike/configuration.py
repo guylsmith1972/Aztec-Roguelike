@@ -35,7 +35,7 @@ def _load_or_create():
 def create_default_config():
     global _config
     with open(_config_filename, 'w') as file:
-        json.dump(_default_config, file, indent=4)
+        json.dump(_default_config, file, indent=2, sorted=True)
     _config = _default_config
 
 def get(key):
@@ -48,4 +48,4 @@ def set(key, value):
         _load_or_create()
     _config[key] = value
     with open(_config_filename, 'w') as file:
-        json.dump(_config, file, indent=4)
+        json.dump(_config, file, indent=2, sorted=True)
