@@ -26,6 +26,7 @@
     <Compile Include="ecosystems.py" />
     <Compile Include="inventory.py" />
     <Compile Include="item.py" />
+    <Compile Include="native_code.py" />
     <Compile Include="player.py" />
     <Compile Include="terrain_chunk.py" />
     <Compile Include="main.py" />
