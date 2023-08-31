@@ -19,8 +19,8 @@ _dll.iterative_voronoi.argtypes = [
 ]
 _dll.free_voronoi_map.argtypes = [ctypes.POINTER(ctypes.c_int)]
 
-def generate_voronoi_map(left, top, width, height, seeds, weights):
-    """Generate a Voronoi map using the provided DLL.
+def generate_noisy_voronoi_map(left, top, width, height, seeds, weights):
+    """Generate a noisy Voronoi map using the provided DLL.
     
     Parameters:
     - left, top, width, height: Dimensions of the area.

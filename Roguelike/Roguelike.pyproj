@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fe791785-016e-4373-ad73-cb7f79ace54a</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>voronoi2.py</StartupFile>
+    <StartupFile>voronoi.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -34,7 +34,6 @@
     <Compile Include="terrain.py" />
     <Compile Include="utility.py" />
     <Compile Include="voronoi.py" />
-    <Compile Include="voronoi2.py" />
     <Compile Include="world.py" />
   </ItemGroup>
   <ItemGroup>
