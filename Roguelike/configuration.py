@@ -38,9 +38,11 @@ def create_default_config():
         json.dump(_default_config, file, indent=2, sort_keys=True)
     _config = _default_config
 
-def get(key):
+def get(key, default_value=None):
     if _config is None:
         _load_or_create()
+    if key not in _config and default_value != None:
+        set(key, default_value)
     return _config.get(key)
 
 def set(key, value):
