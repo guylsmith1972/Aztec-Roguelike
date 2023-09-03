@@ -1,7 +1,7 @@
 {
   "continental_shelf_cutoff": 0.25,
-  "hills_cutoff": 0.7,
-  "hills_cutoff_bottom": 0.3,
+  "hills_cutoff": 0.8,
+  "hills_cutoff_bottom": 0.2,
   "island_horizontal_stretch": 1,
   "island_noise_divisor": 20,
   "island_octaves": 8,

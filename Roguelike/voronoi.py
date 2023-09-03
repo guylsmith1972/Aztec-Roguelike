@@ -7,6 +7,7 @@ import configuration
 import json
 import matplotlib.pyplot as plt
 import numpy as np
+import utility
 
     
 # Constants
@@ -168,20 +169,36 @@ def make_map(seed_count, wrap_horizontal, octaves, noise_divisor, horizontal_str
     # Call the wrapper function
     map_np = generate_noisy_region_map(0, 0, world_width, world_height, seeds, weights, wrap_horizontal, octaves, noise_divisor, horizontal_stretch)
     return map_np, seeds
-        
 
-region_map_np, region_seeds = make_map(world_zone_count, world_wrap_horizontal, world_octaves, world_noise_divisor, world_horizontal_stretch)
-regions = get_region_info(region_map_np, world_width, world_height, region_seeds, world_wrap_horizontal)
-with_oceans_np = create_oceans(region_map_np, regions, ocean_zone_count, math.floor(ocean_zone_count * ocean_ratio))
-mountains_map_np = create_mountains(with_oceans_np, region_map_np, regions, world_wrap_horizontal)
-with_islands_np = create_islands(mountains_map_np, world_wrap_horizontal)
+def rotate_map(coverage_map_np):
+    ocean_histogram = np.sum(coverage_map_np < LAND, axis=0)
+    n = utility.max_index_with_neighboring_avg(ocean_histogram, window_size = 100)
+            
+    _, cols = coverage_map_np.shape
+    new_cols = (np.arange(cols) + n) % world_width
+    return coverage_map_np[:, new_cols]
 
-colors = ['#3498DB', '#3498DB', '#3498DB', '#DC7633', '#8c564b', '#4CAF50', '#8BC34A', '#A1887F']
-cmap = ListedColormap(colors)
-boundaries = list(range(len(colors) + 1))
-norm = BoundaryNorm(boundaries, cmap.N, clip=True)
 
-plt.figure(figsize=(10, 10))
-plt.imshow(with_islands_np, cmap=cmap, norm=norm)
-plt.title('')
-plt.show()
+def main():
+    region_map_np, region_seeds = make_map(world_zone_count, world_wrap_horizontal, world_octaves, world_noise_divisor, world_horizontal_stretch)
+    regions = get_region_info(region_map_np, world_width, world_height, region_seeds, world_wrap_horizontal)
+    with_oceans_np = create_oceans(region_map_np, regions, ocean_zone_count, math.floor(ocean_zone_count * ocean_ratio))
+    mountains_map_np = create_mountains(with_oceans_np, region_map_np, regions, world_wrap_horizontal)
+    with_islands_np = create_islands(mountains_map_np, world_wrap_horizontal)
+    
+
+    rotated_map_np = rotate_map(with_islands_np)
+
+    colors = ['#3498DB', '#3498DB', '#3498DB', '#DC7633', '#8c564b', '#4CAF50', '#8BC34A', '#A1887F']
+    cmap = ListedColormap(colors)
+    boundaries = list(range(len(colors) + 1))
+    norm = BoundaryNorm(boundaries, cmap.N, clip=True)
+
+    plt.figure(figsize=(10, 10))
+    plt.imshow(rotated_map_np, cmap=cmap, norm=norm)
+    plt.title('')
+    plt.show()
+    
+if __name__ == '__main__':
+    main()
+    
