@@ -18,10 +18,10 @@ topology = configuration.get(
         "continental shelf": [1, -0.1, -0.09],
         "littoral": [2, -0.9, 0],
         "islands": [3, -0.9, 0],
-        "land": [4, 0, 0.1],
-        "lowlands": [5, 0, 0.1],
-        "highlands": [6, 0.1, 0.4],
-        "mountains": [7, 0.7, 1],
+        "land": [4, 0, 1],
+        "lowlands": [5, 0, 0.3],
+        "highlands": [6, 0.3, 0.6],
+        "mountains": [7, 0.6, 1],
     },
 )
 
@@ -39,20 +39,20 @@ MOUNTAINS = topology_codes["mountains"]
 
 world_width = configuration.get("world_width", 2048)
 world_height = configuration.get("world_height", 1024)
-world_zone_count = configuration.get("world_zone_count", 1500)
+world_zone_count = configuration.get("world_zone_count", 3000)
 world_wrap_horizontal = configuration.get("world_wrap_horizontal", 1)
 world_octaves = configuration.get("world_octaves", 4)
 world_noise_divisor = configuration.get("world_noise_divisor", 100)
 world_horizontal_stretch = configuration.get("world_horizontal_stretch", 1.5)
 
-ocean_zone_count = configuration.get("ocean_zone_count", 100)
+ocean_zone_count = configuration.get("ocean_zone_count", 30)
 ocean_ratio = configuration.get("ocean_ratio", 0.55)
 ocean_octaves = configuration.get("ocean_octaves", 2)
 ocean_noise_divisor = configuration.get("ocean_noise_divisor", 100)
 ocean_horizontal_stretch = configuration.get("ocean_horizontal_stretch", 1)
 
 island_zone_count = configuration.get("island_zone_count", 150000)
-island_survival_rate = configuration.get("island_survival_rate", 0.05)
+island_survival_rate = configuration.get("island_survival_rate", 0.1)
 island_octaves = configuration.get("island_octaves", 4)
 island_noise_divisor = configuration.get("island_noise_divisor", 100)
 island_horizontal_stretch = configuration.get("island_horizontal_stretch", 1)
@@ -62,10 +62,10 @@ mountain_survival_rate = configuration.get("mountain_survival_rate", 0.5)
 mountain_octaves = configuration.get("mountain_octaves", 1)
 mountain_noise_divisor = configuration.get("mountain_noise_divisor", 20)
 mountain_horizontal_stretch = configuration.get("mountain_horizontal_stretch", 1)
-hills_cutoff_top = configuration.get("hills_cutoff", 0.7)
+hills_cutoff_top = configuration.get("hills_cutoff_top", 0.8)
 mountain_cutoff_top = configuration.get("mountain_cutoff_top", 0.6)
 mountain_cutoff_bottom = configuration.get("mountain_cutoff_bottom", 0.4)
-hills_cutoff_bottom = configuration.get("hills_cutoff_bottom", 0.3)
+hills_cutoff_bottom = configuration.get("hills_cutoff_bottom", 0.2)
 
 
 def histogram_of_ones(regions, index_array, value_array):
@@ -269,14 +269,14 @@ def main():
     low_altitude_np = transform_array(rotated_map_np, [ordered_topology[key][1] for key in sorted(ordered_topology.keys())])
     high_altitude_np = transform_array(rotated_map_np, [ordered_topology[key][2] for key in sorted(ordered_topology.keys())])
 
-    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, 31)
-    blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, 5)
+    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, 7)
+    blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, 7)
 
     heightmap = generate_heightmap(blurred_low_altitude_np, blurred_high_altitude_np, world_width, world_height, 8, 20)
 
     plt.figure(1)
     plt.imshow(heightmap, cmap=custom_colormap([[0, '#3498DB'], [0.49999999, '#3498DB'],  [0.5, '#4CAF50'], [0.65, '#8BC34A'], [0.8, '#A1887F'], [1.0, '#ffffff']]), vmin=-1, vmax=1)
-    plt.colorbar()
+    # plt.colorbar()
 
     # colors = ['#3498DB', '#3498DB', '#3498DB', '#DC7633', '#8c564b', '#4CAF50', '#8BC34A', '#A1887F']
     # cmap = ListedColormap(colors)

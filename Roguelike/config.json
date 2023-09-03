@@ -1,64 +1,25 @@
 {
   "continental_shelf_cutoff": 0.25,
-  "hills_cutoff": 0.8,
   "hills_cutoff_bottom": 0.2,
+  "hills_cutoff_top": 0.8,
   "island_horizontal_stretch": 1,
-  "island_noise_divisor": 20,
-  "island_octaves": 8,
-  "island_survival_rate": 0.03,
+  "island_noise_divisor": 100,
+  "island_octaves": 4,
+  "island_survival_rate": 0.1,
   "island_zone_count": 150000,
-  "islands_cutoff": 0.1,
-  "key_to_movement": {
-    "1073741913": [
-      -1,
-      1
-    ],
-    "1073741914": [
-      0,
-      1
-    ],
-    "1073741915": [
-      1,
-      1
-    ],
-    "1073741916": [
-      -1,
-      0
-    ],
-    "1073741918": [
-      1,
-      0
-    ],
-    "1073741919": [
-      -1,
-      -1
-    ],
-    "1073741920": [
-      0,
-      -1
-    ],
-    "1073741921": [
-      1,
-      -1
-    ]
-  },
-  "max_invalid_terrain_chunks": 100,
+  "islands_cutoff": 0.05,
   "mountain_cutoff_bottom": 0.4,
   "mountain_cutoff_top": 0.6,
   "mountain_horizontal_stretch": 1,
   "mountain_noise_divisor": 20,
   "mountain_octaves": 1,
   "mountain_survival_rate": 0.5,
-  "mountain_zone_count": 30,
-  "moves_per_second": 20,
+  "mountain_zone_count": 20,
   "ocean_horizontal_stretch": 1,
   "ocean_noise_divisor": 100,
-  "ocean_octaves": 1,
+  "ocean_octaves": 2,
   "ocean_ratio": 0.55,
-  "ocean_zone_count": 20,
-  "region_size": 256,
-  "terrain_chunk_size": 16,
-  "tile_size": 16,
+  "ocean_zone_count": 30,
   "topology": {
     "continental shelf": [
       1,
@@ -72,8 +33,8 @@
     ],
     "highlands": [
       6,
-      0.1,
-      0.4
+      0.3,
+      0.6
     ],
     "islands": [
       3,
@@ -83,7 +44,7 @@
     "land": [
       4,
       0,
-      0.1
+      1
     ],
     "littoral": [
       2,
@@ -93,19 +54,19 @@
     "lowlands": [
       5,
       0,
-      0.1
+      0.3
     ],
     "mountains": [
       7,
-      0.4,
+      0.6,
       1
     ]
   },
   "world_height": 1024,
   "world_horizontal_stretch": 1.5,
-  "world_noise_divisor": 50,
-  "world_octaves": 5,
+  "world_noise_divisor": 100,
+  "world_octaves": 4,
   "world_width": 2048,
   "world_wrap_horizontal": 1,
-  "world_zone_count": 2000
+  "world_zone_count": 3000
 }
