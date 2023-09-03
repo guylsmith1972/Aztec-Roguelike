@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fe791785-016e-4373-ad73-cb7f79ace54a</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>main.py</StartupFile>
+    <StartupFile>voronoi.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -52,6 +52,7 @@
     <Content Include="Assets\Raw\Terrain\00111-540790313.png" />
     <Content Include="Assets\Spritesheets\terrain_sheet.png" />
     <Content Include="config.json" />
+    <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets\" />

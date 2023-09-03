@@ -19,7 +19,8 @@ _dll.generate_regions.argtypes = [
     ctypes.POINTER(Point), ctypes.c_int,
     ctypes.POINTER(ctypes.c_double),
     ctypes.c_int,
-    ctypes.c_int, ctypes.c_double
+    ctypes.c_int, ctypes.c_double,
+    ctypes.c_double
 ]
 
 # Define the RegionInfo structure 
@@ -54,7 +55,7 @@ def convert_1d_to_numpy_2d(one_dee, width, height):
     return two_dee_np
 
 
-def generate_noisy_region_map(left, top, width, height, seeds, weights, wrap_horizontal, octaves, noise_divisor):
+def generate_noisy_region_map(left, top, width, height, seeds, weights, wrap_horizontal, octaves, noise_divisor, horizontal_stretch):
     seed_count = len(seeds)
     
     # Convert seeds and weights to ctypes structures
@@ -62,7 +63,7 @@ def generate_noisy_region_map(left, top, width, height, seeds, weights, wrap_hor
     weights_array = (ctypes.c_double * seed_count)(*weights)
     
     # Call the DLL function
-    voronoi_map_ptr = _dll.generate_regions(left, top, width, height, seed_array, seed_count, weights_array, wrap_horizontal, octaves, noise_divisor)
+    voronoi_map_ptr = _dll.generate_regions(left, top, width, height, seed_array, seed_count, weights_array, wrap_horizontal, octaves, noise_divisor, horizontal_stretch)
     
     # Convert the voronoi_map_ptr to a numpy array
     voronoi_map_np = convert_1d_to_numpy_2d(voronoi_map_ptr, width, height)
@@ -93,15 +94,3 @@ def get_region_info(ownership, width, height, seeds, wrap_horizontal):
     _dll.free_array_1d(region_info_ptr)
     
     return region_info_list
-
-def remap(map_raw, remap_array_python, width, height):
-    # Convert remap_array_python into an appropriate array and call the DLL function
-    remap_array_c = (ctypes.c_int * len(remap_array_python))(*remap_array_python)
-    remap_array_ptr = _dll.remap(map_raw, remap_array_c, width * height)
-    
-    # convert terrain_ptr into a numpy array
-    remapped_ptr = convert_1d_to_numpy_2d(remap_array_ptr, width, height)
-    
-    _dll.free_array_1d(remapped_ptr);
-
-    return remapped_ptr
