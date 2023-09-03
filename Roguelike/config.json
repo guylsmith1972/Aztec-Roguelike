@@ -59,11 +59,53 @@
   "region_size": 256,
   "terrain_chunk_size": 16,
   "tile_size": 16,
+  "topology": {
+    "continental shelf": [
+      1,
+      -0.1,
+      -0.09
+    ],
+    "deep ocean": [
+      0,
+      -1,
+      -0.9
+    ],
+    "highlands": [
+      6,
+      0.1,
+      0.4
+    ],
+    "islands": [
+      3,
+      -0.9,
+      0
+    ],
+    "land": [
+      4,
+      0,
+      0.1
+    ],
+    "littoral": [
+      2,
+      -0.9,
+      0
+    ],
+    "lowlands": [
+      5,
+      0,
+      0.1
+    ],
+    "mountains": [
+      7,
+      0.4,
+      1
+    ]
+  },
   "world_height": 1024,
   "world_horizontal_stretch": 1.5,
   "world_noise_divisor": 50,
   "world_octaves": 5,
   "world_width": 2048,
   "world_wrap_horizontal": 1,
-  "world_zone_count": 1000
+  "world_zone_count": 2000
 }

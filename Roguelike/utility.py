@@ -1,3 +1,6 @@
+import numpy as np
+import scipy.signal
+
 
 def find_before(lst, num):
     i = lst.index(num)
@@ -51,3 +54,40 @@ def max_index_with_neighboring_avg(arr, window_size=2):
             best_index = index
     
     return best_index
+
+
+def gaussian_blur(array: np.ndarray, kernel_size: int) -> np.ndarray:
+    """Apply Gaussian blur on a 2D numpy array with wrapping left to right and auto sigma calculation."""
+    
+    def gaussian_kernel(size: int) -> np.ndarray:
+        """Generate a Gaussian kernel."""
+        sigma = size / 6
+        
+        # Create an array of indices centered around 0
+        x = np.linspace(-(size // 2), size // 2, size)
+        
+        # Create the 1D Gaussian kernel
+        kernel_1D = (1/np.sqrt(2*np.pi*sigma**2)) * np.exp(-x**2/(2*sigma**2))
+        
+        # Create the 2D Gaussian kernel
+        kernel_2D = np.outer(kernel_1D, kernel_1D)
+        
+        # Normalize the kernel
+        kernel_2D /= kernel_2D.sum()
+        
+        return kernel_2D
+
+    # Create Gaussian kernel
+    gaussian = gaussian_kernel(kernel_size)
+    
+    # Expand the array by adding columns from the beginning to its end
+    padding = kernel_size // 2
+    expanded_array = np.hstack([array[:, -padding:], array, array[:, :padding]])
+    
+    # Apply convolution without wrapping
+    convolved = scipy.signal.convolve2d(expanded_array, gaussian, mode='same', boundary='fill', fillvalue=0)
+    
+    # Extract the center portion
+    blurred_array = convolved[:, padding:-padding]
+
+    return blurred_array

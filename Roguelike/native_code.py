@@ -45,6 +45,17 @@ _dll.remap.argtypes = [
     ctypes.c_int
 ]
 
+# Define the function signature for generate_heightmap
+_dll.generate_heightmap.argtypes = [
+    ctypes.POINTER(ctypes.c_double),  # minimum_values
+    ctypes.POINTER(ctypes.c_double),  # maximum_values
+    ctypes.c_int,                    # width
+    ctypes.c_int,                    # height
+    ctypes.c_int,                    # octaves
+    ctypes.c_double,                  # noise_divisor
+    ctypes.POINTER(ctypes.c_double)   # output
+]
+_dll.generate_heightmap.restype = None
 
 def convert_1d_to_numpy_2d(one_dee, width, height):
     two_dee_np = np.zeros((height, width), dtype=np.int32)
@@ -94,3 +105,28 @@ def get_region_info(ownership, width, height, seeds, wrap_horizontal):
     _dll.free_array_1d(region_info_ptr)
     
     return region_info_list
+
+
+def generate_heightmap(minimum_altitudes, maximum_altitudes, width, height, octaves, noise_divisor):
+    # Flatten the 2D arrays to 1D
+    min_vals_flat = minimum_altitudes.flatten()
+    max_vals_flat = maximum_altitudes.flatten()
+    
+    # Prepare the output array
+    output = np.zeros((width * height,), dtype=np.float64)
+
+    # Call the C function
+    _dll.generate_heightmap(
+        min_vals_flat.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        max_vals_flat.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        width,
+        height,
+        octaves,
+        noise_divisor,
+        output.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+    )
+    
+    # Reshape the output to 2D
+    output = output.reshape((height, width))
+    
+    return output
