@@ -5,7 +5,7 @@
   "island_horizontal_stretch": 1,
   "island_noise_divisor": 100,
   "island_octaves": 4,
-  "island_survival_rate": 0.1,
+  "island_survival_rate": 0.3,
   "island_zone_count": 150000,
   "islands_cutoff": 0.05,
   "mountain_cutoff_bottom": 0.4,
@@ -14,7 +14,7 @@
   "mountain_noise_divisor": 20,
   "mountain_octaves": 1,
   "mountain_survival_rate": 0.5,
-  "mountain_zone_count": 20,
+  "mountain_zone_count": 30,
   "ocean_horizontal_stretch": 1,
   "ocean_noise_divisor": 100,
   "ocean_octaves": 2,
@@ -53,7 +53,7 @@
     ],
     "lowlands": [
       5,
-      0,
+      0.01,
       0.3
     ],
     "mountains": [

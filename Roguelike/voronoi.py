@@ -1,6 +1,6 @@
 from bidict import bidict
 from matplotlib.colors import BoundaryNorm, ListedColormap, LinearSegmentedColormap
-from native_code import generate_noisy_region_map, get_region_info, generate_heightmap
+from native_code import generate_noisy_region_map, get_region_info, generate_heightmap, generate_regions_with_borders, find_river_paths
 import configuration
 import json
 import math
@@ -19,13 +19,14 @@ topology = configuration.get(
         "littoral": [2, -0.9, 0],
         "islands": [3, -0.9, 0],
         "land": [4, 0, 1],
-        "lowlands": [5, 0, 0.3],
+        "lowlands": [5, 0.01, 0.3],
         "highlands": [6, 0.3, 0.6],
         "mountains": [7, 0.6, 1],
     },
 )
 
 ordered_topology = {i[0]: i for _, i in topology.items()}
+print(json.dumps(ordered_topology, indent=2))
 topology_codes = bidict({name: topology[name][0] for name in topology})
 
 DEEP_OCEAN = topology_codes["deep ocean"]
@@ -40,7 +41,6 @@ MOUNTAINS = topology_codes["mountains"]
 world_width = configuration.get("world_width", 2048)
 world_height = configuration.get("world_height", 1024)
 world_zone_count = configuration.get("world_zone_count", 3000)
-world_wrap_horizontal = configuration.get("world_wrap_horizontal", 1)
 world_octaves = configuration.get("world_octaves", 4)
 world_noise_divisor = configuration.get("world_noise_divisor", 100)
 world_horizontal_stretch = configuration.get("world_horizontal_stretch", 1.5)
@@ -52,7 +52,7 @@ ocean_noise_divisor = configuration.get("ocean_noise_divisor", 100)
 ocean_horizontal_stretch = configuration.get("ocean_horizontal_stretch", 1)
 
 island_zone_count = configuration.get("island_zone_count", 150000)
-island_survival_rate = configuration.get("island_survival_rate", 0.1)
+island_survival_rate = configuration.get("island_survival_rate", 0.3)
 island_octaves = configuration.get("island_octaves", 4)
 island_noise_divisor = configuration.get("island_noise_divisor", 100)
 island_horizontal_stretch = configuration.get("island_horizontal_stretch", 1)
@@ -94,7 +94,6 @@ def transform_array(A, M):
 def create_oceans(ownership_np, regions, world_cells, ocean_count):
     ocean_map_np, _ = make_map(
         ocean_zone_count,
-        world_wrap_horizontal,
         ocean_octaves,
         ocean_noise_divisor,
         ocean_horizontal_stretch,
@@ -132,16 +131,15 @@ def create_oceans(ownership_np, regions, world_cells, ocean_count):
     return transform_array(ownership_np, world_remap)
 
 
-def create_islands(coverage_map_np, world_wrap_horizontal):
+def create_islands(coverage_map_np):
     island_map_np, island_seeds = make_map(
         island_zone_count,
-        world_wrap_horizontal,
         island_octaves,
         island_noise_divisor,
         island_horizontal_stretch,
     )
     island_zones = get_region_info(
-        island_map_np, world_width, world_height, island_seeds, world_wrap_horizontal
+        island_map_np, world_width, world_height, island_seeds
     )
     island_remap = []
     max_index = math.floor(island_zone_count * island_survival_rate)
@@ -154,10 +152,9 @@ def create_islands(coverage_map_np, world_wrap_horizontal):
     return np.where(coverage_map_np == ISLANDS, remapped_islands, coverage_map_np)
 
 
-def create_mountains(coverage_map_np, ownership_map, regions, world_wrap_horizontal):
+def create_mountains(coverage_map_np, ownership_map, regions):
     mountain_zones_np, _ = make_map(
         mountain_zone_count,
-        world_wrap_horizontal,
         mountain_octaves,
         mountain_noise_divisor,
         mountain_horizontal_stretch,
@@ -196,7 +193,7 @@ def create_mountains(coverage_map_np, ownership_map, regions, world_wrap_horizon
     return transform_array(ownership_map, world_remap)
 
 
-def make_map(seed_count, wrap_horizontal, octaves, noise_divisor, horizontal_stretch):
+def make_map(seed_count, octaves, noise_divisor, horizontal_stretch):
     seeds = [
         (np.random.randint(0, world_width), np.random.randint(0, world_height))
         for _ in range(seed_count)
@@ -211,7 +208,6 @@ def make_map(seed_count, wrap_horizontal, octaves, noise_divisor, horizontal_str
         world_height,
         seeds,
         weights,
-        wrap_horizontal,
         octaves,
         noise_divisor,
         horizontal_stretch,
@@ -219,13 +215,16 @@ def make_map(seed_count, wrap_horizontal, octaves, noise_divisor, horizontal_str
     return map_np, seeds
 
 
-def rotate_map(coverage_map_np):
-    ocean_histogram = np.sum(coverage_map_np < LAND, axis=0)
-    n = utility.max_index_with_neighboring_avg(ocean_histogram, window_size=100)
+def rotate_map(coverage_map_np, international_date_line=None):
+    if international_date_line is None:
+        ocean_histogram = np.sum(coverage_map_np < LAND, axis=0)
+        n = utility.max_index_with_neighboring_avg(ocean_histogram, window_size=100)
+    else:
+        n = international_date_line
 
     _, cols = coverage_map_np.shape
     new_cols = (np.arange(cols) + n) % world_width
-    return coverage_map_np[:, new_cols]
+    return coverage_map_np[:, new_cols], n
 
 def custom_colormap(color_key):
     # Convert HEX colors to RGB tuples
@@ -242,16 +241,24 @@ def hex_to_rgb(hex_color):
     return tuple(int(hex_color[i:i+2], 16)/255.0 for i in (0, 2, 4))
 
 
+def add_figure(name, data, cmap, vmin=0, vmax=1, norm=None):
+    plt.figure(name)
+    if norm is None:
+        plt.imshow(data, cmap=cmap, vmin=vmin, vmax=vmax)
+    else:
+        plt.imshow(data, cmap=cmap, norm=norm)
+    # plt.title = name
+    plt.colorbar() 
+    
 def main():
     region_map_np, region_seeds = make_map(
         world_zone_count,
-        world_wrap_horizontal,
         world_octaves,
         world_noise_divisor,
         world_horizontal_stretch,
     )
     regions = get_region_info(
-        region_map_np, world_width, world_height, region_seeds, world_wrap_horizontal
+        region_map_np, world_width, world_height, region_seeds
     )
     with_oceans_np = create_oceans(
         region_map_np,
@@ -260,33 +267,56 @@ def main():
         math.floor(ocean_zone_count * ocean_ratio),
     )
     mountains_map_np = create_mountains(
-        with_oceans_np, region_map_np, regions, world_wrap_horizontal
+        with_oceans_np, region_map_np, regions
     )
-    with_islands_np = create_islands(mountains_map_np, world_wrap_horizontal)
+    with_islands_np = create_islands(mountains_map_np)
 
-    rotated_map_np = rotate_map(with_islands_np)
-
-    low_altitude_np = transform_array(rotated_map_np, [ordered_topology[key][1] for key in sorted(ordered_topology.keys())])
-    high_altitude_np = transform_array(rotated_map_np, [ordered_topology[key][2] for key in sorted(ordered_topology.keys())])
-
-    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, 7)
-    blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, 7)
-
-    heightmap = generate_heightmap(blurred_low_altitude_np, blurred_high_altitude_np, world_width, world_height, 8, 20)
-
-    plt.figure(1)
-    plt.imshow(heightmap, cmap=custom_colormap([[0, '#3498DB'], [0.49999999, '#3498DB'],  [0.5, '#4CAF50'], [0.65, '#8BC34A'], [0.8, '#A1887F'], [1.0, '#ffffff']]), vmin=-1, vmax=1)
-    # plt.colorbar()
-
-    # colors = ['#3498DB', '#3498DB', '#3498DB', '#DC7633', '#8c564b', '#4CAF50', '#8BC34A', '#A1887F']
-    # cmap = ListedColormap(colors)
-    # boundaries = list(range(len(colors) + 1))
-    # norm = BoundaryNorm(boundaries, cmap.N, clip=True)
-    # plt.figure(2)
-    # plt.imshow(rotated_map_np, cmap=cmap, norm=norm)
+    with_islands_np, international_date_line = rotate_map(with_islands_np)
+    with_oceans_np, _ = rotate_map(with_oceans_np, international_date_line)
+    region_map_np, _ = rotate_map(region_map_np, international_date_line)
     
-    plt.show()
+    water_land_coverage_np = transform_array(with_islands_np, [0, 0, 0, 0, 1, 1, 1, 1])
+    
+    low_altitude_np = transform_array(with_islands_np, [ordered_topology[key][1] for key in sorted(ordered_topology.keys())])
+    high_altitude_np = transform_array(with_islands_np, [ordered_topology[key][2] for key in sorted(ordered_topology.keys())])
 
+    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, 71)
+    blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, 71)
+
+    oldstyle_heightmap = generate_heightmap(blurred_low_altitude_np, blurred_high_altitude_np, world_width, world_height, 8, 20)
+
+    _, longwave_heightmap = generate_regions_with_borders(water_land_coverage_np, len(topology), 0, 0, world_width, world_height, 1, 2000, 1)
+    _, mediumwave_heightmap = generate_regions_with_borders(region_map_np, len(region_seeds), 0, 0, world_width, world_height, 8, 20, 1)
+    
+    normalized_heightmap = blurred_low_altitude_np + (blurred_high_altitude_np - blurred_low_altitude_np) * (longwave_heightmap + mediumwave_heightmap) / 2;
+
+    black_white_cmap = custom_colormap([[0, '#000000'], [1.0, '#ffffff']])
+    full_colors_cmap = custom_colormap([[0, '#3498DB'], [0.49999999, '#3498DB'],  [0.5, '#4CAF50'], [0.65, '#8BC34A'], [0.8, '#A1887F'], [1.0, '#ffffff']])
+    
+    add_figure('low_altitude_np', low_altitude_np, full_colors_cmap, vmin=-1, vmax=1)
+    add_figure('high_altitude_np', high_altitude_np, full_colors_cmap, vmin=-1, vmax=1)
+    add_figure('blurred_low_altitude_np', blurred_low_altitude_np, full_colors_cmap, vmin=-1, vmax=1)
+    add_figure('blurred_high_altitude_np', blurred_high_altitude_np, full_colors_cmap, vmin=-1, vmax=1)
+    
+    add_figure('longwave_heightmap', longwave_heightmap, black_white_cmap)
+    add_figure('mediumwave_heightmap', mediumwave_heightmap, black_white_cmap)
+    add_figure('normalized_heightmap', normalized_heightmap, full_colors_cmap, vmin=-1, vmax=1)
+
+    add_figure('old_style_heightmap', oldstyle_heightmap, full_colors_cmap, vmin=-1, vmax=1)
+    
+    normalized_rivers = find_river_paths(normalized_heightmap)
+    old_style_rivers = find_river_paths(oldstyle_heightmap)
+    
+    add_figure('normalized_rivers', normalized_rivers, black_white_cmap)
+    add_figure('old_style_rivers', old_style_rivers, black_white_cmap)
+    
+    colors = ['#3498DB', '#DC7633']
+    colors_cmap = ListedColormap(colors)
+    boundaries = list(range(len(colors) + 1))
+    norm = BoundaryNorm(boundaries, colors_cmap.N, clip=True)
+    add_figure('water_land_coverage_np', water_land_coverage_np, colors_cmap, norm=norm)
+
+    plt.show()
 
 
 if __name__ == "__main__":

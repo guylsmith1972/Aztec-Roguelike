@@ -5,58 +5,95 @@ import numpy as np
 import ctypes
 
 # Load the DLL
-_dll = ctypes.CDLL("./AztecClientBL.dll") 
+dll = ctypes.CDLL("./AztecClientBL.dll") 
 
-# Define the Point structure
-class Point(ctypes.Structure):
-    _fields_ = [("x", ctypes.c_int), ("y", ctypes.c_int)]
+import ctypes
 
-# Define the function signature for generate_regions
-_dll.generate_regions.restype = ctypes.POINTER(ctypes.c_int)
-_dll.generate_regions.argtypes = [
-    ctypes.c_int, ctypes.c_int,
-    ctypes.c_int, ctypes.c_int,
-    ctypes.POINTER(Point), ctypes.c_int,
-    ctypes.POINTER(ctypes.c_double),
-    ctypes.c_int,
-    ctypes.c_int, ctypes.c_double,
-    ctypes.c_double
-]
+# Define the constants and structures as per the provided definitions
+MAX_NEIGHBORS = 20
 
-# Define the RegionInfo structure 
+class Location(ctypes.Structure):
+    _fields_ = [("x", ctypes.c_int),
+                ("y", ctypes.c_int)]
+
 class RegionInfo(ctypes.Structure):
-    _fields_ = [
-        ("area", ctypes.c_int),
-        ("neighbors", ctypes.c_int * 20),
-        ("neighbor_count", ctypes.c_int)
-    ]
+    _fields_ = [("area", ctypes.c_int),
+                ("neighbors", ctypes.c_int * MAX_NEIGHBORS),
+                ("neighbor_count", ctypes.c_int)]
 
-# Set up the function signature for calculate_region_info from the DLL
-_dll.calculate_region_info.restype = ctypes.POINTER(RegionInfo)
-_dll.calculate_region_info.argtypes = [
-    ctypes.POINTER(ctypes.c_int), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int
+# Define function prototypes
+dll.generate_regions.argtypes = [
+    ctypes.c_int,  # world_x,
+    ctypes.c_int,  # world_y
+    ctypes.c_int,  # width
+    ctypes.c_int,  # height
+    ctypes.POINTER(Location), # seeds
+    ctypes.c_int,  # seed_count
+    ctypes.POINTER(ctypes.c_float),  # weights
+    ctypes.c_int,  # octaves
+    ctypes.c_float,  # noise_divisor
+    ctypes.c_float,  # horizontal_stretch
+    ctypes.POINTER(ctypes.c_int),  # ownership
+    ctypes.POINTER(ctypes.c_float)  # distances
 ]
 
-
-# Define the function signature for remap
-_dll.remap.restype = ctypes.POINTER(ctypes.c_int)
-_dll.remap.argtypes = [
-    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), 
-    ctypes.c_int
+dll.generate_regions_with_borders.argtypes = [
+    ctypes.POINTER(ctypes.c_int),  # ownership
+    ctypes.c_int,  # num_owners
+    ctypes.c_int,  # world_x
+    ctypes.c_int,  # world_y
+    ctypes.c_int,  # width
+    ctypes.c_int,  # height
+    ctypes.c_int,  # octaves
+    ctypes.c_float,  # noise_divisor
+    ctypes.c_float,  # horizontal_stretch
+    ctypes.POINTER(ctypes.c_float),  # distances
+    ctypes.POINTER(ctypes.c_float)  # normalized
 ]
 
-# Define the function signature for generate_heightmap
-_dll.generate_heightmap.argtypes = [
-    ctypes.POINTER(ctypes.c_double),  # minimum_values
-    ctypes.POINTER(ctypes.c_double),  # maximum_values
+dll.generate_heightmap.argtypes = [
+    ctypes.POINTER(ctypes.c_float),  # minimum_values
+    ctypes.POINTER(ctypes.c_float),  # maximum_values
+    ctypes.c_int,  # width
+    ctypes.c_int,  # height
+    ctypes.c_int,  # octaves
+    ctypes.c_float,  # noise_divisor
+    ctypes.POINTER(ctypes.c_float)  # heightmap
+]
+
+dll.calculate_region_info.argtypes = [
+    ctypes.POINTER(ctypes.c_int),  # ownership
+    ctypes.c_int,  # width
+    ctypes.c_int,  # height
+    ctypes.c_int  # seed_count
+]
+dll.calculate_region_info.restype = ctypes.POINTER(RegionInfo)
+
+dll.find_river_paths.argtypes = [
+    ctypes.POINTER(ctypes.c_float),  # heightmap
     ctypes.c_int,                    # width
     ctypes.c_int,                    # height
-    ctypes.c_int,                    # octaves
-    ctypes.c_double,                  # noise_divisor
-    ctypes.POINTER(ctypes.c_double)   # output
+    ctypes.POINTER(ctypes.c_int)     # water_volume
 ]
-_dll.generate_heightmap.restype = None
 
+dll.find_river_paths.argtypes = [
+    ctypes.POINTER(ctypes.c_float),  # float* heights
+    ctypes.c_int,                    # int width
+    ctypes.c_int,                    # int height
+    ctypes.POINTER(ctypes.c_float)   # float* water_volume
+]
+
+dll.remap.argtypes = [
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.c_int
+]
+dll.remap.restype = ctypes.POINTER(ctypes.c_int)
+
+dll.free_array_1d.argtypes = [ctypes.POINTER(ctypes.c_int)]
+
+dll.free_region_info_array.argtypes = [ctypes.POINTER(RegionInfo)]
+
+
+# Helper function remains unchanged
 def convert_1d_to_numpy_2d(one_dee, width, height):
     two_dee_np = np.zeros((height, width), dtype=np.int32)
     for y in range(height):
@@ -65,34 +102,31 @@ def convert_1d_to_numpy_2d(one_dee, width, height):
             
     return two_dee_np
 
-
-def generate_noisy_region_map(left, top, width, height, seeds, weights, wrap_horizontal, octaves, noise_divisor, horizontal_stretch):
+# Updated to reflect new function signature and float type
+def generate_noisy_region_map(left, top, width, height, seeds, weights, octaves, noise_divisor, horizontal_stretch):
     seed_count = len(seeds)
     
-    # Convert seeds and weights to ctypes structures
-    seed_array = (Point * seed_count)(*[Point(s[0], s[1]) for s in seeds])
-    weights_array = (ctypes.c_double * seed_count)(*weights)
+    seed_array = (Location * seed_count)(*[Location(s[0], s[1]) for s in seeds])
+    weights_array = (ctypes.c_float * seed_count)(*weights)
     
-    # Call the DLL function
-    voronoi_map_ptr = _dll.generate_regions(left, top, width, height, seed_array, seed_count, weights_array, wrap_horizontal, octaves, noise_divisor, horizontal_stretch)
+    ownership_array = (ctypes.c_int * (width * height))()
+    distances_array = (ctypes.c_float * (width * height))()
+
+    dll.generate_regions(left, top, width, height, seed_array, seed_count, weights_array, octaves, noise_divisor, horizontal_stretch, ownership_array, distances_array)
     
-    # Convert the voronoi_map_ptr to a numpy array
-    voronoi_map_np = convert_1d_to_numpy_2d(voronoi_map_ptr, width, height)
-    
-    # Free the allocated memory
-    _dll.free_array_1d(voronoi_map_ptr)
+    voronoi_map_np = convert_1d_to_numpy_2d(ownership_array, width, height)
+
+    # In this case, we don't free the ownership_array and distances_array because they are managed by Python's garbage collector
     
     return voronoi_map_np
 
-def get_region_info(ownership, width, height, seeds, wrap_horizontal):
+# This function remains mostly unchanged
+def get_region_info(ownership, width, height, seeds):
     seed_count = len(seeds)
     
-    # Call the DLL function
-    region_info_ptr = _dll.calculate_region_info(ownership.ctypes.data_as(ctypes.POINTER(ctypes.c_int)), 
-                                                 width, height, seed_count, wrap_horizontal)
+    region_info_ptr = dll.calculate_region_info(ownership.ctypes.data_as(ctypes.POINTER(ctypes.c_int)), width, height, seed_count)
     
-    # Process the output to convert it into a Python-friendly format
-    region_info_list ={}
+    region_info_list = {}
     for i in range(seed_count):
         region = region_info_ptr[i]
         region_info_list[i] = {
@@ -102,31 +136,69 @@ def get_region_info(ownership, width, height, seeds, wrap_horizontal):
             "category": None
         }
     
-    _dll.free_array_1d(region_info_ptr)
+    dll.free_region_info_array(region_info_ptr)
     
     return region_info_list
 
-
+# Updated to reflect float type
 def generate_heightmap(minimum_altitudes, maximum_altitudes, width, height, octaves, noise_divisor):
-    # Flatten the 2D arrays to 1D
-    min_vals_flat = minimum_altitudes.flatten()
-    max_vals_flat = maximum_altitudes.flatten()
+    min_vals_flat = minimum_altitudes.flatten().astype(np.float32)
+    max_vals_flat = maximum_altitudes.flatten().astype(np.float32)
     
-    # Prepare the output array
-    output = np.zeros((width * height,), dtype=np.float64)
+    output = np.zeros((width * height,), dtype=np.float32)
 
-    # Call the C function
-    _dll.generate_heightmap(
-        min_vals_flat.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-        max_vals_flat.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    dll.generate_heightmap(
+        min_vals_flat.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+        max_vals_flat.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
         width,
         height,
         octaves,
         noise_divisor,
-        output.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        output.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
     )
     
-    # Reshape the output to 2D
     output = output.reshape((height, width))
     
     return output
+
+def generate_regions_with_borders(ownership, num_owners, world_x, world_y, width, height, octaves, noise_divisor, horizontal_stretch):
+    # Create arrays to hold the output data
+    distances = np.empty((height, width), dtype=np.float32)
+    normalized = np.empty((height, width), dtype=np.float32)
+
+    # Call the DLL function
+    dll.generate_regions_with_borders(
+        ownership.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+        num_owners,
+        world_x,
+        world_y,
+        width,
+        height,
+        octaves,
+        ctypes.c_float(noise_divisor),
+        ctypes.c_float(horizontal_stretch),
+        distances.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+        normalized.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+    )
+
+    return distances, normalized
+
+def find_river_paths(heights):
+    # Convert the input heightmap to a numpy array with float32 type (which corresponds to float in C++)
+    heights_np = np.array(heights, dtype=np.float32)
+
+    # Get the width and height of the heightmap
+    height, width = heights_np.shape
+
+    # Create an empty water_volume array initialized to zero
+    water_volume_np = np.zeros((height, width), dtype=np.float32)
+
+    # Call the C++ function
+    dll.find_river_paths(
+        heights_np.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+        width,
+        height,
+        water_volume_np.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+    )
+
+    return water_volume_np
