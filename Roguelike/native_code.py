@@ -23,8 +23,6 @@ class RegionInfo(ctypes.Structure):
 
 # Define function prototypes
 dll.generate_regions.argtypes = [
-    ctypes.c_int,  # world_x,
-    ctypes.c_int,  # world_y
     ctypes.c_int,  # width
     ctypes.c_int,  # height
     ctypes.POINTER(Location), # seeds
@@ -40,8 +38,6 @@ dll.generate_regions.argtypes = [
 dll.generate_regions_with_borders.argtypes = [
     ctypes.POINTER(ctypes.c_int),  # ownership
     ctypes.c_int,  # num_owners
-    ctypes.c_int,  # world_x
-    ctypes.c_int,  # world_y
     ctypes.c_int,  # width
     ctypes.c_int,  # height
     ctypes.c_int,  # octaves
@@ -50,6 +46,7 @@ dll.generate_regions_with_borders.argtypes = [
     ctypes.POINTER(ctypes.c_float),  # distances
     ctypes.POINTER(ctypes.c_float)  # normalized
 ]
+        
 
 dll.generate_heightmap.argtypes = [
     ctypes.POINTER(ctypes.c_float),  # minimum_values
@@ -103,7 +100,7 @@ def convert_1d_to_numpy_2d(one_dee, width, height):
     return two_dee_np
 
 # Updated to reflect new function signature and float type
-def generate_noisy_region_map(left, top, width, height, seeds, weights, octaves, noise_divisor, horizontal_stretch):
+def generate_noisy_region_map(width, height, seeds, weights, octaves, noise_divisor, horizontal_stretch):
     seed_count = len(seeds)
     
     seed_array = (Location * seed_count)(*[Location(s[0], s[1]) for s in seeds])
@@ -112,7 +109,7 @@ def generate_noisy_region_map(left, top, width, height, seeds, weights, octaves,
     ownership_array = (ctypes.c_int * (width * height))()
     distances_array = (ctypes.c_float * (width * height))()
 
-    dll.generate_regions(left, top, width, height, seed_array, seed_count, weights_array, octaves, noise_divisor, horizontal_stretch, ownership_array, distances_array)
+    dll.generate_regions(width, height, seed_array, seed_count, weights_array, octaves, noise_divisor, horizontal_stretch, ownership_array, distances_array)
     
     voronoi_map_np = convert_1d_to_numpy_2d(ownership_array, width, height)
 
@@ -161,17 +158,15 @@ def generate_heightmap(minimum_altitudes, maximum_altitudes, width, height, octa
     
     return output
 
-def generate_regions_with_borders(ownership, num_owners, world_x, world_y, width, height, octaves, noise_divisor, horizontal_stretch):
+def generate_regions_with_borders(ownership, num_owners, width, height, octaves, noise_divisor, horizontal_stretch):
     # Create arrays to hold the output data
-    distances = np.empty((height, width), dtype=np.float32)
-    normalized = np.empty((height, width), dtype=np.float32)
+    distances = np.zeros((width * height,), dtype=np.float32)
+    normalized = np.zeros((width * height,), dtype=np.float32)
 
     # Call the DLL function
     dll.generate_regions_with_borders(
         ownership.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
         num_owners,
-        world_x,
-        world_y,
         width,
         height,
         octaves,
@@ -181,7 +176,7 @@ def generate_regions_with_borders(ownership, num_owners, world_x, world_y, width
         normalized.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
     )
 
-    return distances, normalized
+    return distances.reshape((height, width)), normalized.reshape((height, width))
 
 def find_river_paths(heights):
     # Convert the input heightmap to a numpy array with float32 type (which corresponds to float in C++)

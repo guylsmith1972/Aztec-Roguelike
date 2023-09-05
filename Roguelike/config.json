@@ -19,7 +19,7 @@
   "ocean_noise_divisor": 100,
   "ocean_octaves": 2,
   "ocean_ratio": 0.55,
-  "ocean_zone_count": 30,
+  "ocean_zone_count": 90,
   "topology": {
     "continental shelf": [
       1,
@@ -67,6 +67,5 @@
   "world_noise_divisor": 100,
   "world_octaves": 4,
   "world_width": 2048,
-  "world_wrap_horizontal": 1,
   "world_zone_count": 3000
 }

@@ -138,9 +138,7 @@ def create_islands(coverage_map_np):
         island_noise_divisor,
         island_horizontal_stretch,
     )
-    island_zones = get_region_info(
-        island_map_np, world_width, world_height, island_seeds
-    )
+    
     island_remap = []
     max_index = math.floor(island_zone_count * island_survival_rate)
     for i in range(island_zone_count):
@@ -202,8 +200,6 @@ def make_map(seed_count, octaves, noise_divisor, horizontal_stretch):
 
     # Call the wrapper function
     map_np = generate_noisy_region_map(
-        0,
-        0,
         world_width,
         world_height,
         seeds,
@@ -224,7 +220,9 @@ def rotate_map(coverage_map_np, international_date_line=None):
 
     _, cols = coverage_map_np.shape
     new_cols = (np.arange(cols) + n) % world_width
-    return coverage_map_np[:, new_cols], n
+    rotated_map = coverage_map_np[:, new_cols]
+    return np.ascontiguousarray(rotated_map), n
+
 
 def custom_colormap(color_key):
     # Convert HEX colors to RGB tuples
@@ -250,6 +248,15 @@ def add_figure(name, data, cmap, vmin=0, vmax=1, norm=None):
     # plt.title = name
     plt.colorbar() 
     
+
+def print_array_order(arr, name):
+    if arr.flags['C_CONTIGUOUS']:
+        print(f"The array {name} is in C-order (row-major).")
+    elif arr.flags['F_CONTIGUOUS']:
+        print(f"The array {name} is in Fortran-order (column-major).")
+    else:
+        print(f"The array {name} has a non-standard memory layout.")
+
 def main():
     region_map_np, region_seeds = make_map(
         world_zone_count,
@@ -280,15 +287,13 @@ def main():
     low_altitude_np = transform_array(with_islands_np, [ordered_topology[key][1] for key in sorted(ordered_topology.keys())])
     high_altitude_np = transform_array(with_islands_np, [ordered_topology[key][2] for key in sorted(ordered_topology.keys())])
 
-    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, 71)
-    blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, 71)
+    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, 101)
+    blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, 7)
 
-    oldstyle_heightmap = generate_heightmap(blurred_low_altitude_np, blurred_high_altitude_np, world_width, world_height, 8, 20)
-
-    _, longwave_heightmap = generate_regions_with_borders(water_land_coverage_np, len(topology), 0, 0, world_width, world_height, 1, 2000, 1)
-    _, mediumwave_heightmap = generate_regions_with_borders(region_map_np, len(region_seeds), 0, 0, world_width, world_height, 8, 20, 1)
+    _, low_frequency_heightmap = generate_regions_with_borders(water_land_coverage_np, 2, world_width, world_height, 8, 20, 1)
+    _, high_frequency_heightmap = generate_regions_with_borders(region_map_np, len(region_seeds), world_width, world_height, 8, 20, 1)
     
-    normalized_heightmap = blurred_low_altitude_np + (blurred_high_altitude_np - blurred_low_altitude_np) * (longwave_heightmap + mediumwave_heightmap) / 2;
+    normalized_heightmap = blurred_low_altitude_np + (blurred_high_altitude_np - blurred_low_altitude_np) * (low_frequency_heightmap + high_frequency_heightmap) / 2;
 
     black_white_cmap = custom_colormap([[0, '#000000'], [1.0, '#ffffff']])
     full_colors_cmap = custom_colormap([[0, '#3498DB'], [0.49999999, '#3498DB'],  [0.5, '#4CAF50'], [0.65, '#8BC34A'], [0.8, '#A1887F'], [1.0, '#ffffff']])
@@ -298,17 +303,13 @@ def main():
     add_figure('blurred_low_altitude_np', blurred_low_altitude_np, full_colors_cmap, vmin=-1, vmax=1)
     add_figure('blurred_high_altitude_np', blurred_high_altitude_np, full_colors_cmap, vmin=-1, vmax=1)
     
-    add_figure('longwave_heightmap', longwave_heightmap, black_white_cmap)
-    add_figure('mediumwave_heightmap', mediumwave_heightmap, black_white_cmap)
+    add_figure('low_frequency_heightmap', low_frequency_heightmap, black_white_cmap)
+    add_figure('high_frequency_heightmap', high_frequency_heightmap, black_white_cmap)
     add_figure('normalized_heightmap', normalized_heightmap, full_colors_cmap, vmin=-1, vmax=1)
 
-    add_figure('old_style_heightmap', oldstyle_heightmap, full_colors_cmap, vmin=-1, vmax=1)
-    
     normalized_rivers = find_river_paths(normalized_heightmap)
-    old_style_rivers = find_river_paths(oldstyle_heightmap)
     
     add_figure('normalized_rivers', normalized_rivers, black_white_cmap)
-    add_figure('old_style_rivers', old_style_rivers, black_white_cmap)
     
     colors = ['#3498DB', '#DC7633']
     colors_cmap = ListedColormap(colors)
