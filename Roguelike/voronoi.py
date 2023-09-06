@@ -2,6 +2,8 @@ from bidict import bidict
 from matplotlib.colors import BoundaryNorm, ListedColormap, LinearSegmentedColormap
 from native_code import generate_noisy_region_map, get_region_info, generate_heightmap, generate_regions_with_borders, find_river_paths
 import configuration
+import erosion
+import gpu
 import json
 import math
 import matplotlib.colors as mcolors
@@ -257,7 +259,24 @@ def print_array_order(arr, name):
     else:
         print(f"The array {name} has a non-standard memory layout.")
 
+
+def normalize_to_minus1_1(arr):
+    x_min = np.min(arr)
+    x_max = np.max(arr)
+    
+    # Handle the case where x_min == x_max to prevent division by zero
+    if x_min == x_max:
+        return np.full_like(arr, 1.0) if x_max > 0 else np.full_like(arr, -1.0)
+    
+    m = 2 / (x_max - x_min)
+    c = (x_max + x_min) / (x_max - x_min)
+    
+    return m * arr - c
+
+
 def main():
+    display = gpu.initialize_opengl_context(100, 100);
+    
     region_map_np, region_seeds = make_map(
         world_zone_count,
         world_octaves,
@@ -287,7 +306,7 @@ def main():
     low_altitude_np = transform_array(with_islands_np, [ordered_topology[key][1] for key in sorted(ordered_topology.keys())])
     high_altitude_np = transform_array(with_islands_np, [ordered_topology[key][2] for key in sorted(ordered_topology.keys())])
 
-    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, 101)
+    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, 7)
     blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, 7)
 
     _, low_frequency_heightmap = generate_regions_with_borders(water_land_coverage_np, 2, world_width, world_height, 8, 20, 1)
@@ -316,6 +335,53 @@ def main():
     boundaries = list(range(len(colors) + 1))
     norm = BoundaryNorm(boundaries, colors_cmap.N, clip=True)
     add_figure('water_land_coverage_np', water_land_coverage_np, colors_cmap, norm=norm)
+
+    altitude_multiplier = 1
+
+    bedrock = (normalized_heightmap + 1) / 2 * altitude_multiplier
+    sediment = np.full(bedrock.shape, 0.01) * altitude_multiplier
+    water_level = np.full(bedrock.shape, 0.001) * altitude_multiplier
+    suspended_sediment = np.full(bedrock.shape, 0.001) * altitude_multiplier
+    
+    modified_normalized_heights = normalized_heightmap + sediment + suspended_sediment
+    
+    for i in range(20):
+        print('-' * 80)
+        print(f'iteration # {i}')
+        print(f'bedrock sum: {np.sum(bedrock)} -- contains NaN: {np.any(np.isnan(bedrock))}')
+        print(f'sediment sum: {np.sum(sediment)} -- contains NaN: {np.any(np.isnan(sediment))}')
+        print(f'water_level sum: {np.sum(water_level)} -- contains NaN: {np.any(np.isnan(water_level))}')
+        print(f'suspended_sediment sum: {np.sum(suspended_sediment)} -- contains NaN: {np.any(np.isnan(suspended_sediment))}')
+        print(f'total sediment: {np.sum(sediment) + np.sum(suspended_sediment)}')
+        
+        if np.any(np.isnan(suspended_sediment)):
+            break
+
+        bedrock, sediment, water_level, suspended_sediment = erosion.erode(bedrock, sediment, water_level, suspended_sediment, iterations=500)
+
+    bedrock /= altitude_multiplier
+    sediment /= altitude_multiplier
+    water_level /= altitude_multiplier
+    suspended_sediment /= altitude_multiplier
+    
+    eroded_heightmap = bedrock + sediment + suspended_sediment
+    print(f'min eroded height value is {np.min(eroded_heightmap)}')
+    print(f'max eroded height value is {np.max(eroded_heightmap)}')
+    eroded_heightmap = (eroded_heightmap - np.min(eroded_heightmap)) * (2.0 / (np.max(eroded_heightmap) - np.min(eroded_heightmap))) - 1
+    # eroded_heightmap = normalize_to_minus1_1(eroded_heightmap)
+
+    add_figure('eroded_heightmap', eroded_heightmap, full_colors_cmap, vmin=-1, vmax=1)
+    add_figure('eroded_heightmap_bw', eroded_heightmap, black_white_cmap, vmin=np.min(eroded_heightmap), vmax=np.max(eroded_heightmap))
+    add_figure('suspended_sediment', suspended_sediment, black_white_cmap, vmin=np.min(suspended_sediment), vmax=np.max(suspended_sediment))
+    
+    add_figure('sediment', sediment, black_white_cmap, vmin=np.min(sediment), vmax=np.max(sediment))
+    add_figure('water_level', water_level, black_white_cmap, vmin=np.min(water_level), vmax=np.max(water_level))
+
+    eroded_rivers = find_river_paths(eroded_heightmap)
+    add_figure('eroded_rivers', eroded_rivers, black_white_cmap)
+    
+    delta_height = eroded_heightmap - modified_normalized_heights
+    add_figure('delta_height', delta_height, black_white_cmap, vmin=-1)
 
     plt.show()
 

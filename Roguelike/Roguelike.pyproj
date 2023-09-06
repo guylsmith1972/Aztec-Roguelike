@@ -24,6 +24,8 @@
   <ItemGroup>
     <Compile Include="configuration.py" />
     <Compile Include="ecosystems.py" />
+    <Compile Include="erosion.py" />
+    <Compile Include="gpu.py" />
     <Compile Include="inventory.py" />
     <Compile Include="item.py" />
     <Compile Include="native_code.py" />
@@ -50,12 +52,14 @@
     <Content Include="Assets\Raw\Terrain\00086-540790288.png" />
     <Content Include="Assets\Raw\Terrain\00097-540790299.png" />
     <Content Include="Assets\Raw\Terrain\00111-540790313.png" />
+    <Content Include="Assets\Shaders\erosion.glsl" />
     <Content Include="Assets\Spritesheets\terrain_sheet.png" />
     <Content Include="config.json" />
     <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets\" />
+    <Folder Include="Assets\Shaders\" />
     <Folder Include="Assets\Raw\" />
     <Folder Include="Assets\Raw\Terrain\" />
     <Folder Include="Assets\Spritesheets\" />
