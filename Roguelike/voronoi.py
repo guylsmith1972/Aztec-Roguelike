@@ -21,8 +21,8 @@ topology = configuration.get(
         "littoral": [2, -0.9, 0],
         "islands": [3, -0.9, 0],
         "land": [4, 0, 1],
-        "lowlands": [5, 0.01, 0.3],
-        "highlands": [6, 0.3, 0.6],
+        "lowlands": [5, 0.01, 0.1],
+        "highlands": [6, 0.1, 0.6],
         "mountains": [7, 0.6, 1],
     },
 )
@@ -175,17 +175,19 @@ def create_mountains(coverage_map_np, ownership_map, regions):
         if land_type == LAND:
             coverage = histogram[region_id]
             # print(f'coverage: {coverage}, area: {region["area"]}')
-            percentage = coverage / region["area"]
-            if percentage > hills_cutoff_top:
-                land_type = LOWLANDS
-            elif percentage > mountain_cutoff_top:
-                land_type = HIGHLANDS
-            elif percentage > mountain_cutoff_bottom:
-                land_type = MOUNTAINS
-            elif percentage > hills_cutoff_bottom:
-                land_type = HIGHLANDS
-            else:
-                land_type = LOWLANDS
+            area = region['area']
+            if area > 0:
+                percentage = coverage / region["area"]
+                if percentage > hills_cutoff_top:
+                    land_type = LOWLANDS
+                elif percentage > mountain_cutoff_top:
+                    land_type = HIGHLANDS
+                elif percentage > mountain_cutoff_bottom:
+                    land_type = MOUNTAINS
+                elif percentage > hills_cutoff_bottom:
+                    land_type = HIGHLANDS
+                else:
+                    land_type = LOWLANDS
             region["category"] = topology_codes.inverse[land_type]
 
         world_remap.append(land_type)
@@ -274,6 +276,17 @@ def normalize_to_minus1_1(arr):
     return m * arr - c
 
 
+def histogram_plot(name, data):
+    flattened_data = data.flatten()
+
+    # Generate the histogram
+    plt.figure(name)
+    plt.hist(flattened_data, bins='auto', edgecolor='black', alpha=0.7)
+    plt.xlabel('Value')
+    plt.ylabel('Frequency')
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+
 def main():
     display = gpu.initialize_opengl_context(100, 100);
     
@@ -286,6 +299,7 @@ def main():
     regions = get_region_info(
         region_map_np, world_width, world_height, region_seeds
     )
+    
     with_oceans_np = create_oceans(
         region_map_np,
         regions,
@@ -300,23 +314,45 @@ def main():
     with_islands_np, international_date_line = rotate_map(with_islands_np)
     with_oceans_np, _ = rotate_map(with_oceans_np, international_date_line)
     region_map_np, _ = rotate_map(region_map_np, international_date_line)
+
+    histogram_plot('with_islands_np_histogram', with_islands_np)
     
     water_land_coverage_np = transform_array(with_islands_np, [0, 0, 0, 0, 1, 1, 1, 1])
     
     low_altitude_np = transform_array(with_islands_np, [ordered_topology[key][1] for key in sorted(ordered_topology.keys())])
     high_altitude_np = transform_array(with_islands_np, [ordered_topology[key][2] for key in sorted(ordered_topology.keys())])
 
-    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, 21)
-    blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, 7)
+    print(f'low_altitude_np sum: {np.sum(low_altitude_np)} -- contains NaN: {np.any(np.isnan(low_altitude_np))}')
+    print(f'high_altitude_np sum: {np.sum(high_altitude_np)} -- contains NaN: {np.any(np.isnan(high_altitude_np))}')
+
+    histogram_plot('low_altitude_np_histogram', low_altitude_np)
+    histogram_plot('high_altitude_np_histogram', high_altitude_np)
+
+    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, configuration.get('generator.world.deformation.blurring.low_altitude', 17))
+    blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, configuration.get('generator.world.deformation.blurring.high_altitude', 7))
+
+    print(f'blurred_low_altitude_np sum: {np.sum(blurred_low_altitude_np)} -- contains NaN: {np.any(np.isnan(blurred_low_altitude_np))}')
+    print(f'blurred_high_altitude_np sum: {np.sum(blurred_high_altitude_np)} -- contains NaN: {np.any(np.isnan(blurred_high_altitude_np))}')
+
+    histogram_plot('blurred_low_altitude_np_histogram', blurred_low_altitude_np)
+    histogram_plot('blurred_high_altitude_np_histogram', blurred_high_altitude_np)
 
     _, low_frequency_heightmap = generate_regions_with_borders(water_land_coverage_np, 2, world_width, world_height, 8, 20, 1)
-    _, high_frequency_heightmap = generate_regions_with_borders(region_map_np, len(region_seeds), world_width, world_height, 8, 20, 1)
-    
+    _, high_frequency_heightmap = generate_regions_with_borders(region_map_np, len(regions), world_width, world_height, 8, 20, 1)
+
+    print(f'low_frequency_heightmap sum: {np.sum(low_frequency_heightmap)} -- contains NaN: {np.any(np.isnan(low_frequency_heightmap))}')
+    print(f'high_frequency_heightmap sum: {np.sum(high_frequency_heightmap)} -- contains NaN: {np.any(np.isnan(high_frequency_heightmap))}')
+
+    histogram_plot('low_frequency_heightmap_histogram', low_frequency_heightmap)
+    histogram_plot('high_frequency_heightmap_histogram', high_frequency_heightmap)
+
     normalized_heightmap = blurred_low_altitude_np + (blurred_high_altitude_np - blurred_low_altitude_np) * (low_frequency_heightmap + high_frequency_heightmap) / 2;
+
+    print(f'normalized_heightmap sum: {np.sum(normalized_heightmap)} -- contains NaN: {np.any(np.isnan(normalized_heightmap))}')
 
     black_white_cmap = custom_colormap([[0, '#000000'], [1.0, '#ffffff']])
     full_colors_cmap = custom_colormap([[0, '#3498DB'], [0.49999999, '#3498DB'],  [0.5, '#4CAF50'], [0.65, '#8BC34A'], [0.8, '#A1887F'], [1.0, '#ffffff']])
-    
+
     add_figure('low_altitude_np', low_altitude_np, full_colors_cmap, vmin=-1, vmax=1)
     add_figure('high_altitude_np', high_altitude_np, full_colors_cmap, vmin=-1, vmax=1)
     add_figure('blurred_low_altitude_np', blurred_low_altitude_np, full_colors_cmap, vmin=-1, vmax=1)
@@ -324,6 +360,7 @@ def main():
     
     add_figure('low_frequency_heightmap', low_frequency_heightmap, black_white_cmap)
     add_figure('high_frequency_heightmap', high_frequency_heightmap, black_white_cmap)
+    
     add_figure('normalized_heightmap', normalized_heightmap, full_colors_cmap, vmin=-1, vmax=1)
 
     normalized_rivers = find_river_paths(normalized_heightmap)
@@ -336,28 +373,30 @@ def main():
     norm = BoundaryNorm(boundaries, colors_cmap.N, clip=True)
     add_figure('water_land_coverage_np', water_land_coverage_np, colors_cmap, norm=norm)
 
-    altitude_multiplier = 1
+    altitude_multiplier = configuration.get('generator.world.deformation.erosion.multiplier', 1)
 
     bedrock = (normalized_heightmap + 1) / 2 * altitude_multiplier
     sediment = np.full(bedrock.shape, 0.01) * altitude_multiplier
     water_level = np.full(bedrock.shape, 0.001) * altitude_multiplier
-    suspended_sediment = np.full(bedrock.shape, 0.001) * altitude_multiplier
+    suspended_sediment = np.full(bedrock.shape, 0) * altitude_multiplier
     
     modified_normalized_heights = normalized_heightmap + sediment + suspended_sediment
     
-    for i in range(2):
-        print('-' * 80)
-        print(f'iteration # {i}')
-        print(f'bedrock sum: {np.sum(bedrock)} -- contains NaN: {np.any(np.isnan(bedrock))}')
-        print(f'sediment sum: {np.sum(sediment)} -- contains NaN: {np.any(np.isnan(sediment))}')
-        print(f'water_level sum: {np.sum(water_level)} -- contains NaN: {np.any(np.isnan(water_level))}')
-        print(f'suspended_sediment sum: {np.sum(suspended_sediment)} -- contains NaN: {np.any(np.isnan(suspended_sediment))}')
-        print(f'total sediment: {np.sum(sediment) + np.sum(suspended_sediment)}')
+    print('-' * 80)
+    print(f'bedrock sum: {np.sum(bedrock)} -- contains NaN: {np.any(np.isnan(bedrock))}')
+    print(f'sediment sum: {np.sum(sediment)} -- contains NaN: {np.any(np.isnan(sediment))}')
+    print(f'water_level sum: {np.sum(water_level)} -- contains NaN: {np.any(np.isnan(water_level))}')
+    print(f'suspended_sediment sum: {np.sum(suspended_sediment)} -- contains NaN: {np.any(np.isnan(suspended_sediment))}')
+    print(f'total sediment: {np.sum(sediment) + np.sum(suspended_sediment)}')
         
-        if np.any(np.isnan(suspended_sediment)):
-            break
+    bedrock, sediment, water_level, suspended_sediment = erosion.erode(bedrock, sediment, water_level, suspended_sediment, iterations=configuration.get('generator.world.deformation.erosion.iterations', 1000))
 
-        bedrock, sediment, water_level, suspended_sediment = erosion.erode(bedrock, sediment, water_level, suspended_sediment, iterations=500)
+    print('-' * 80)
+    print(f'bedrock sum: {np.sum(bedrock)} -- contains NaN: {np.any(np.isnan(bedrock))}')
+    print(f'sediment sum: {np.sum(sediment)} -- contains NaN: {np.any(np.isnan(sediment))}')
+    print(f'water_level sum: {np.sum(water_level)} -- contains NaN: {np.any(np.isnan(water_level))}')
+    print(f'suspended_sediment sum: {np.sum(suspended_sediment)} -- contains NaN: {np.any(np.isnan(suspended_sediment))}')
+    print(f'total sediment: {np.sum(sediment) + np.sum(suspended_sediment)}')
 
     bedrock /= altitude_multiplier
     sediment /= altitude_multiplier

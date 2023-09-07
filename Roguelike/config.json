@@ -1,6 +1,16 @@
 {
   "generator": {
     "world": {
+      "deformation": {
+        "blurring": {
+          "high_altitude": 7,
+          "low_altitude": 17
+        },
+        "erosion": {
+          "iterations": 10,
+          "multiplier": 1
+        }
+      },
       "islands": {
         "horizontal_stretch": 1,
         "islands_cutoff": 0.05,
@@ -51,7 +61,7 @@
         ],
         "highlands": [
           6,
-          0.3,
+          0.1,
           0.6
         ],
         "islands": [
@@ -72,7 +82,7 @@
         "lowlands": [
           5,
           0.01,
-          0.3
+          0.1
         ],
         "mountains": [
           7,
