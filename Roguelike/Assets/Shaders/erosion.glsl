@@ -45,18 +45,21 @@ void get_outflows(ivec2 coord, out float[8] water_outflows, out float[8] sedimen
 
     float actual_water_outflow = max(0, min(total_outflow, water_depth));
 
-    // Determine how we will distribute water and suspended sediment, and how we will erode
-    float erosion = actual_water_outflow * erosion_factor;
+    // Deposite sediment
     float sedimentation = suspended_sediment * (1 - min(1, actual_water_outflow / zero_flow_rate));
+    sediment_depth += sedimentation;
+    suspended_sediment -= sedimentation;
 
-    erosion -= sedimentation;
+    // Erode sediment
+    float erosion = actual_water_outflow * erosion_factor;
     erosion = min(erosion, sediment_depth);
-    suspended_sediment += erosion; // This will deduct sedimentation since erosion is reduced by sedimentation
+    suspended_sediment += erosion;
     sediment_depth -= erosion;
 
+    // Distribute water and suspended sediment to neighbors
     for (int i = 0; i < 8; i++) {
-        if (total_recipients > 0) {
-            float outflow_share = height_differences[i] / total_recipients;
+        if (total_outflow > 0) {
+            float outflow_share = height_differences[i] / total_outflow;
             water_outflows[i] = actual_water_outflow * outflow_share;
             sediment_outflows[i] = suspended_sediment * outflow_share;
         } else {
@@ -67,7 +70,7 @@ void get_outflows(ivec2 coord, out float[8] water_outflows, out float[8] sedimen
 
     displacements.r = bedrock_height;
     displacements.g = sediment_depth;
-    displacements.b = water_depth - total_water_outflow;
+    displacements.b = water_depth - actual_water_outflow;
     displacements.a = suspended_sediment;
 }
 

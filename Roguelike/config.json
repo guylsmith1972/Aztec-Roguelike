@@ -1,71 +1,85 @@
 {
-  "continental_shelf_cutoff": 0.25,
-  "hills_cutoff_bottom": 0.2,
-  "hills_cutoff_top": 0.8,
-  "island_horizontal_stretch": 1,
-  "island_noise_divisor": 100,
-  "island_octaves": 4,
-  "island_survival_rate": 0.3,
-  "island_zone_count": 150000,
-  "islands_cutoff": 0.05,
-  "mountain_cutoff_bottom": 0.4,
-  "mountain_cutoff_top": 0.6,
-  "mountain_horizontal_stretch": 1,
-  "mountain_noise_divisor": 20,
-  "mountain_octaves": 1,
-  "mountain_survival_rate": 0.5,
-  "mountain_zone_count": 30,
-  "ocean_horizontal_stretch": 1,
-  "ocean_noise_divisor": 100,
-  "ocean_octaves": 2,
-  "ocean_ratio": 0.55,
-  "ocean_zone_count": 40,
-  "topology": {
-    "continental shelf": [
-      1,
-      -0.1,
-      -0.09
-    ],
-    "deep ocean": [
-      0,
-      -1,
-      -0.9
-    ],
-    "highlands": [
-      6,
-      0.3,
-      0.6
-    ],
-    "islands": [
-      3,
-      -0.9,
-      0
-    ],
-    "land": [
-      4,
-      0,
-      1
-    ],
-    "littoral": [
-      2,
-      -0.9,
-      0
-    ],
-    "lowlands": [
-      5,
-      0.01,
-      0.3
-    ],
-    "mountains": [
-      7,
-      0.6,
-      1
-    ]
-  },
-  "world_height": 1024,
-  "world_horizontal_stretch": 1.5,
-  "world_noise_divisor": 100,
-  "world_octaves": 4,
-  "world_width": 2048,
-  "world_zone_count": 3000
+  "generator": {
+    "world": {
+      "islands": {
+        "horizontal_stretch": 1,
+        "islands_cutoff": 0.05,
+        "noise_divisor": 100,
+        "octaves": 4,
+        "survival_rate": 0.3,
+        "zone_count": 150000
+      },
+      "map": {
+        "height": 1024,
+        "width": 2048
+      },
+      "mountains": {
+        "cutoff_bottom": 0.4,
+        "cutoff_top": 0.6,
+        "hills_cutoff_bottom": 0.2,
+        "hills_cutoff_top": 0.8,
+        "horizontal_stretch": 1,
+        "noise_divisor": 20,
+        "octaves": 1,
+        "survival_rate": 0.5,
+        "zone_count": 30
+      },
+      "oceans": {
+        "continental_shelf_cutoff": 0.25,
+        "horizontal_stretch": 1,
+        "noise_divisor": 100,
+        "octaves": 2,
+        "ratio": 0.55,
+        "zone_count": 30
+      },
+      "regions": {
+        "horizontal_stretch": 1.5,
+        "noise_divisor": 100,
+        "octaves": 4,
+        "zone_count": 3000
+      },
+      "topology": {
+        "continental shelf": [
+          1,
+          -0.1,
+          -0.09
+        ],
+        "deep ocean": [
+          0,
+          -1,
+          -0.9
+        ],
+        "highlands": [
+          6,
+          0.3,
+          0.6
+        ],
+        "islands": [
+          3,
+          -0.9,
+          0
+        ],
+        "land": [
+          4,
+          0,
+          1
+        ],
+        "littoral": [
+          2,
+          -0.9,
+          0
+        ],
+        "lowlands": [
+          5,
+          0.01,
+          0.3
+        ],
+        "mountains": [
+          7,
+          0.6,
+          1
+        ]
+      }
+    }
+  }
 }

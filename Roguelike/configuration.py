@@ -1,24 +1,4 @@
-
 import json
-import pygame
-
-# Default configuration values
-_default_config = {
-    "moves_per_second": 10,
-    "key_to_movement": {
-        pygame.K_KP7: [-1, -1],
-        pygame.K_KP8: [0, -1],
-        pygame.K_KP9: [1, -1],
-        pygame.K_KP4: [-1, 0],
-        pygame.K_KP6: [1, 0],
-        pygame.K_KP1: [-1, 1],
-        pygame.K_KP2: [0, 1],
-        pygame.K_KP3: [1, 1]
-    },
-    "max_invalid_terrain_chunks": 100,
-    "terrain_chunk_size": 16,
-    "tile_size": 20
-}
 
 _config = None
 _config_filename = "config.json"
@@ -35,19 +15,35 @@ def _load_or_create():
 def create_default_config():
     global _config
     with open(_config_filename, 'w') as file:
-        json.dump(_default_config, file, indent=2, sort_keys=True)
-    _config = _default_config
+        json.dump({}, file)
+    _config = {}
 
 def get(key, default_value=None):
     if _config is None:
         _load_or_create()
-    if key not in _config and default_value != None:
-        set(key, default_value)
-    return _config.get(key)
+    
+    parts = key.split(".")
+    curr_dict = _config
+    for part in parts:
+        if part not in curr_dict:
+            if default_value is not None:
+                set(key, default_value)
+            return default_value
+        curr_dict = curr_dict[part]
+    return curr_dict
 
 def set(key, value):
     if _config is None:
         _load_or_create()
-    _config[key] = value
+    
+    parts = key.split(".")
+    curr_dict = _config
+    for part in parts[:-1]:
+        if part not in curr_dict:
+            curr_dict[part] = {}
+        curr_dict = curr_dict[part]
+    curr_dict[parts[-1]] = value
+
     with open(_config_filename, 'w') as file:
         json.dump(_config, file, indent=2, sort_keys=True)
+

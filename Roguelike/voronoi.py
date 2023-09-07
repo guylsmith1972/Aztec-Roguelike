@@ -14,7 +14,7 @@ import utility
 
 # Constants
 topology = configuration.get(
-    "topology",
+    "generator.world.topology",
     {
         "deep ocean": [0, -1, -0.9],
         "continental shelf": [1, -0.1, -0.09],
@@ -40,34 +40,34 @@ LOWLANDS = topology_codes["lowlands"]
 HIGHLANDS = topology_codes["highlands"]
 MOUNTAINS = topology_codes["mountains"]
 
-world_width = configuration.get("world_width", 2048)
-world_height = configuration.get("world_height", 1024)
-world_zone_count = configuration.get("world_zone_count", 3000)
-world_octaves = configuration.get("world_octaves", 4)
-world_noise_divisor = configuration.get("world_noise_divisor", 100)
-world_horizontal_stretch = configuration.get("world_horizontal_stretch", 1.5)
+world_width = configuration.get("generator.world.map.width", 2048)
+world_height = configuration.get("generator.world.map.height", 1024)
+world_zone_count = configuration.get("generator.world.regions.zone_count", 3000)
+world_octaves = configuration.get("generator.world.regions.octaves", 4)
+world_noise_divisor = configuration.get("generator.world.regions.noise_divisor", 100)
+world_horizontal_stretch = configuration.get("generator.world.regions.horizontal_stretch", 1.5)
 
-ocean_zone_count = configuration.get("ocean_zone_count", 30)
-ocean_ratio = configuration.get("ocean_ratio", 0.55)
-ocean_octaves = configuration.get("ocean_octaves", 2)
-ocean_noise_divisor = configuration.get("ocean_noise_divisor", 100)
-ocean_horizontal_stretch = configuration.get("ocean_horizontal_stretch", 1)
+ocean_zone_count = configuration.get("generator.world.oceans.zone_count", 30)
+ocean_ratio = configuration.get("generator.world.oceans.ratio", 0.55)
+ocean_octaves = configuration.get("generator.world.oceans.octaves", 2)
+ocean_noise_divisor = configuration.get("generator.world.oceans.noise_divisor", 100)
+ocean_horizontal_stretch = configuration.get("generator.world.oceans.horizontal_stretch", 1)
 
-island_zone_count = configuration.get("island_zone_count", 150000)
-island_survival_rate = configuration.get("island_survival_rate", 0.3)
-island_octaves = configuration.get("island_octaves", 4)
-island_noise_divisor = configuration.get("island_noise_divisor", 100)
-island_horizontal_stretch = configuration.get("island_horizontal_stretch", 1)
+island_zone_count = configuration.get("generator.world.islands.zone_count", 150000)
+island_survival_rate = configuration.get("generator.world.islands.survival_rate", 0.3)
+island_octaves = configuration.get("generator.world.islands.octaves", 4)
+island_noise_divisor = configuration.get("generator.world.islands.noise_divisor", 100)
+island_horizontal_stretch = configuration.get("generator.world.islands.horizontal_stretch", 1)
 
-mountain_zone_count = configuration.get("mountain_zone_count", 30)
-mountain_survival_rate = configuration.get("mountain_survival_rate", 0.5)
-mountain_octaves = configuration.get("mountain_octaves", 1)
-mountain_noise_divisor = configuration.get("mountain_noise_divisor", 20)
-mountain_horizontal_stretch = configuration.get("mountain_horizontal_stretch", 1)
-hills_cutoff_top = configuration.get("hills_cutoff_top", 0.8)
-mountain_cutoff_top = configuration.get("mountain_cutoff_top", 0.6)
-mountain_cutoff_bottom = configuration.get("mountain_cutoff_bottom", 0.4)
-hills_cutoff_bottom = configuration.get("hills_cutoff_bottom", 0.2)
+mountain_zone_count = configuration.get("generator.world.mountains.zone_count", 30)
+mountain_survival_rate = configuration.get("generator.world.mountains.survival_rate", 0.5)
+mountain_octaves = configuration.get("generator.world.mountains.octaves", 1)
+mountain_noise_divisor = configuration.get("generator.world.mountains.noise_divisor", 20)
+mountain_horizontal_stretch = configuration.get("generator.world.mountains.horizontal_stretch", 1)
+hills_cutoff_top = configuration.get("generator.world.mountains.hills_cutoff_top", 0.8)
+mountain_cutoff_top = configuration.get("generator.world.mountains.cutoff_top", 0.6)
+mountain_cutoff_bottom = configuration.get("generator.world.mountains.cutoff_bottom", 0.4)
+hills_cutoff_bottom = configuration.get("generator.world.mountains.hills_cutoff_bottom", 0.2)
 
 
 def histogram_of_ones(regions, index_array, value_array):
@@ -109,8 +109,8 @@ def create_oceans(ownership_np, regions, world_cells, ocean_count):
 
     histogram = histogram_of_ones(regions, ownership_np, remapped_ocean)
 
-    continental_shelf_cutoff = configuration.get("continental_shelf_cutoff", 0.25)
-    islands_cutoff = configuration.get("islands_cutoff", 0.05)
+    continental_shelf_cutoff = configuration.get("generator.world.oceans.continental_shelf_cutoff", 0.25)
+    islands_cutoff = configuration.get("generator.world.islands.islands_cutoff", 0.05)
 
     world_remap = []
     for region_id, region in regions.items():
@@ -306,7 +306,7 @@ def main():
     low_altitude_np = transform_array(with_islands_np, [ordered_topology[key][1] for key in sorted(ordered_topology.keys())])
     high_altitude_np = transform_array(with_islands_np, [ordered_topology[key][2] for key in sorted(ordered_topology.keys())])
 
-    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, 7)
+    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, 21)
     blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, 7)
 
     _, low_frequency_heightmap = generate_regions_with_borders(water_land_coverage_np, 2, world_width, world_height, 8, 20, 1)
@@ -345,7 +345,7 @@ def main():
     
     modified_normalized_heights = normalized_heightmap + sediment + suspended_sediment
     
-    for i in range(20):
+    for i in range(2):
         print('-' * 80)
         print(f'iteration # {i}')
         print(f'bedrock sum: {np.sum(bedrock)} -- contains NaN: {np.any(np.isnan(bedrock))}')
