@@ -7,12 +7,12 @@
           "low_altitude": 11
         },
         "erosion": {
-          "erosion_factor": 0.01,
+          "erosion_factor": 0.05,
           "evaporation_factor": 0.01,
+          "evaporation_multiplier": 10000,
           "iterations": 1000,
-          "multiplier": 1,
           "precipitation_factor": 0.01,
-          "sedimentation_factor": 0.01,
+          "sedimentation_factor": 0.1,
           "shader": "erosion.glsl"
         }
       },
@@ -40,7 +40,7 @@
         "zone_count": 30
       },
       "regions": {
-        "zone_count": 1000
+        "zone_count": 3000
       },
       "topology": {
         "continental shelf": [

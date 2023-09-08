@@ -27,6 +27,9 @@
     <Compile Include="ecosystems.py" />
     <Compile Include="erosion.py" />
     <Compile Include="gpu.py" />
+    <Compile Include="gpu_shader.py" />
+    <Compile Include="gpu_ssbo.py" />
+    <Compile Include="gpu_texture.py" />
     <Compile Include="inventory.py" />
     <Compile Include="item.py" />
     <Compile Include="native_code.py" />

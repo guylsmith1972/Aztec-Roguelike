@@ -340,8 +340,8 @@ def main():
     histogram_plot('low_altitude_np_histogram', low_altitude_np)
     histogram_plot('high_altitude_np_histogram', high_altitude_np)
 
-    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, configuration.get('generator.world.deformation.blurring.low_altitude', 17))
-    blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, configuration.get('generator.world.deformation.blurring.high_altitude', 7))
+    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, configuration.get('generator.world.deformation.blurring.low_altitude', 11))
+    blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, configuration.get('generator.world.deformation.blurring.high_altitude', 11))
 
     print(f'blurred_low_altitude_np sum: {np.sum(blurred_low_altitude_np)} -- contains NaN: {np.any(np.isnan(blurred_low_altitude_np))}')
     print(f'blurred_high_altitude_np sum: {np.sum(blurred_high_altitude_np)} -- contains NaN: {np.any(np.isnan(blurred_high_altitude_np))}')

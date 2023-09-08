@@ -2,7 +2,7 @@
 
 layout(rgba32f, binding = 0) readonly uniform image2D input_data_texture;
 layout(rgba32f, binding = 1) writeonly uniform image2D output_data_texture;
-layout(std430, binding = 2) buffer ResultBuffer {
+layout(std430, binding = 2) buffer WaterCountBuffer {
     uint cell_count[];
 };
 shared uint local_count;
@@ -13,6 +13,7 @@ uniform float precipitation;
 uniform float erosion_factor;
 uniform float sedimentation_factor;
 uniform float evaporation;
+uniform uint evaporation_multiplier;
 
 const float near_zero = 0.0001;
 const ivec2 offsets[4] = {ivec2(0, -1), ivec2(-1, 0), ivec2(1, 0), ivec2(0, 1)};
@@ -47,7 +48,7 @@ void get_outflows(ivec2 coord, out float[4] water_outflows, out float[4] sedimen
 
     float bedrock_height = cell_data.r;
     float sediment_depth = cell_data.g;
-    float water_depth = max(0, cell_data.b - evaporation) + precipitation;
+    float water_depth = cell_data.b + precipitation;
     float suspended_sediment = cell_data.a;
 
     float sediment_height = bedrock_height + sediment_depth;
@@ -154,7 +155,8 @@ void main() {
     }
 
     //  Update cell, accounting for evaporation
-    vec4 new_cell_data = vec4(bedrock_height, sediment_depth, water_depth, suspended_sediment);
+    vec4 new_cell_data = vec4(bedrock_height, sediment_depth, max(0, water_depth - evaporation), suspended_sediment);
+    float actual_evaporation = water_depth - new_cell_data.b;
 
     // Count number of cells that contain positive water depths
     if (gl_LocalInvocationIndex == 0) {
@@ -162,7 +164,7 @@ void main() {
     }
     barrier();
     if (new_cell_data.b > 0) {
-        atomicAdd(local_count, 1);
+        atomicAdd(local_count, uint(evaporation_multiplier * actual_evaporation));
     }
     barrier();
     if (gl_LocalInvocationIndex == 0) {
