@@ -3,19 +3,21 @@
     "world": {
       "deformation": {
         "blurring": {
-          "high_altitude": 7,
-          "low_altitude": 17
+          "high_altitude": 11,
+          "low_altitude": 11
         },
         "erosion": {
-          "iterations": 10,
-          "multiplier": 1
+          "erosion_factor": 0.01,
+          "evaporation_factor": 0.01,
+          "iterations": 1000,
+          "multiplier": 1,
+          "precipitation_factor": 0.01,
+          "sedimentation_factor": 0.01,
+          "shader": "erosion.glsl"
         }
       },
       "islands": {
-        "horizontal_stretch": 1,
         "islands_cutoff": 0.05,
-        "noise_divisor": 100,
-        "octaves": 4,
         "survival_rate": 0.3,
         "zone_count": 150000
       },
@@ -24,35 +26,27 @@
         "width": 2048
       },
       "mountains": {
-        "cutoff_bottom": 0.4,
-        "cutoff_top": 0.6,
-        "hills_cutoff_bottom": 0.2,
-        "hills_cutoff_top": 0.8,
-        "horizontal_stretch": 1,
-        "noise_divisor": 20,
-        "octaves": 1,
+        "land_frequencies": {
+          "highlands": 0.3,
+          "lowlands": 0.5,
+          "mountains": 0.2
+        },
         "survival_rate": 0.5,
         "zone_count": 30
       },
       "oceans": {
         "continental_shelf_cutoff": 0.25,
-        "horizontal_stretch": 1,
-        "noise_divisor": 100,
-        "octaves": 2,
         "ratio": 0.55,
         "zone_count": 30
       },
       "regions": {
-        "horizontal_stretch": 1.5,
-        "noise_divisor": 100,
-        "octaves": 4,
-        "zone_count": 3000
+        "zone_count": 1000
       },
       "topology": {
         "continental shelf": [
           1,
-          -0.1,
-          -0.09
+          -0.5,
+          -0.9
         ],
         "deep ocean": [
           0,
@@ -61,7 +55,7 @@
         ],
         "highlands": [
           6,
-          0.1,
+          0.3,
           0.6
         ],
         "islands": [
@@ -82,7 +76,7 @@
         "lowlands": [
           5,
           0.01,
-          0.1
+          0.3
         ],
         "mountains": [
           7,

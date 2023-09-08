@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>Roguelike</Name>
     <RootNamespace>Roguelike</RootNamespace>
-    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>MSBuild|env1|$(MSBuildProjectFullPath)</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +22,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="colorization.py" />
     <Compile Include="configuration.py" />
     <Compile Include="ecosystems.py" />
     <Compile Include="erosion.py" />
@@ -52,6 +53,7 @@
     <Content Include="Assets\Raw\Terrain\00086-540790288.png" />
     <Content Include="Assets\Raw\Terrain\00097-540790299.png" />
     <Content Include="Assets\Raw\Terrain\00111-540790313.png" />
+    <Content Include="Assets\Shaders\erosion_old.glsl" />
     <Content Include="Assets\Shaders\erosion.glsl" />
     <Content Include="Assets\Spritesheets\terrain_sheet.png" />
     <Content Include="config.json" />
@@ -65,10 +67,10 @@
     <Folder Include="Assets\Spritesheets\" />
   </ItemGroup>
   <ItemGroup>
-    <Interpreter Include="env\">
-      <Id>env</Id>
+    <Interpreter Include="env1\">
+      <Id>env1</Id>
       <Version>3.10</Version>
-      <Description>env (Python 3.10 (64-bit))</Description>
+      <Description>env1 (Python 3.10 (64-bit))</Description>
       <InterpreterPath>Scripts\python.exe</InterpreterPath>
       <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>

@@ -1,8 +1,17 @@
 import numpy as np
 import pygame
+from pygame.display import get_window_size
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GL.shaders import compileProgram, compileShader
+
+
+def check_opengl_error():
+    # After critical OpenGL operations
+    error = glGetError()
+    if error != GL_NO_ERROR:
+        # Convert error code to string and raise exception (or handle appropriately)
+        raise Exception(f"OpenGL error occurred: {error}")
 
 
 def initialize_opengl_context(width=800, height=600):
@@ -24,23 +33,20 @@ def initialize_opengl_context(width=800, height=600):
 
 class Shader:
     def __init__(self, filename):
-        with open(filename, "r") as f:
+        with open(f'Assets/Shaders/{filename}', "r") as f:
             compute_shader_source = f.read()
 
-        self.compute_shader = compileShader(compute_shader_source, GL_COMPUTE_SHADER)
-        self.shader_program = compileProgram(self.compute_shader)
+        try:
+            self.compute_shader = compileShader(compute_shader_source, GL_COMPUTE_SHADER)
+        except Exception as e:
+            print(f"Shader Compilation Error: {str(e)}")
+            raise e  # Re-raise the original exception for further handling
 
-    def _check_shader_errors(self, obj, mode):
-        if mode == GL_COMPILE_STATUS:
-            status = glGetShaderiv(obj, mode)
-            error_log = glGetShaderInfoLog(obj)
-        else:  # Assuming mode is GL_LINK_STATUS for programs
-            status = glGetProgramiv(obj, mode)
-            error_log = glGetProgramInfoLog(obj)
-
-        if not status:
-            print(f"Error Log:\n{error_log.decode('utf-8')}")
-            raise RuntimeError("Shader/Program compilation/linking failed!")
+        try:
+            self.shader_program = compileProgram(self.compute_shader)
+        except Exception as e:
+            print(f"Shader Program Linking Error: {str(e)}")
+            raise e  # Re-raise the original exception for further handling
 
     def set_uniform(self, name, type, *values):
         location = glGetUniformLocation(self.shader_program, name)
@@ -50,7 +56,16 @@ class Shader:
             glUniform3f(location, *values)
         elif type == "1i":
             glUniform1i(location, *values)
-        # ... Add more uniform types as needed
+        else:  # ... Add more uniform types as needed
+            raise RuntimeError(f'Cannot set uniform for type {type}')
+        
+    def get_workgroup_size(self):
+        # Assuming local workgroup size is 16x16 in the shader
+        return 16, 16
+
+    def get_workgroup_count(self, width, height):
+        wg_width, wg_height = self.get_workgroup_size()
+        return width // wg_width, height // wg_height
 
     def use(self):
         glUseProgram(self.shader_program)
@@ -58,6 +73,7 @@ class Shader:
     def cleanup(self):
         glDeleteProgram(self.shader_program)
         glDeleteShader(self.compute_shader)
+
 
 
 def create_texture_from_numpy(np_array):
@@ -147,35 +163,57 @@ def texture_rgba32f_to_numpy_arrays(texture, width, height):
     return red, green, blue, alpha
 
 
-def iterate_rgba32f(shader_filename, red, green, blue, alpha, iterations):
-    height, width = red.shape
-    shader = Shader(shader_filename)
-    input_state = create_rgba32f_texture_from_numpy(red, green, blue, alpha)
-    output_state = create_empty_rgba32f_texture(width, height)
-    
-    for i in range(iterations):
-        # Use the shader program
-        shader.use()
-        
-        # Bind the input and output textures
-        # We're assuming binding points 0 and 1 in the shader for input and output respectively
-        glBindImageTexture(0, input_state, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F)
-        glBindImageTexture(1, output_state, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F)
+def create_empty_int_ssbo(num_elements):
+    # Create a new SSBO
+    ssbo = glGenBuffers(1)
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
+    glBufferData(GL_SHADER_STORAGE_BUFFER, num_elements * 4, None, GL_DYNAMIC_DRAW)  # Assuming 4 bytes per element (uint)
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0)
+    return ssbo
 
-        # Set any required uniforms here, if any (example: shader.set_uniform("someUniform", "1f", 0.5))
+
+def clear_int_ssbo(ssbo):
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
+    glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT, None)
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0)
+
+
+def get_int_ssbo_sum(ssbo, num_workgroups_x, num_workgroups_y):
+    # After shader dispatch, read the cell counts
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
+    cell_counts = glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, num_workgroups_x * num_workgroups_y * 4)  # Assuming 4 bytes per element (uint)
+    return np.sum(np.frombuffer(cell_counts, dtype=np.uint32))
+
+
+def bind_rgba32f_to_index(texture, index, allow_read, allow_write):
+    if allow_read and not allow_write:
+        glBindImageTexture(index, texture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F)
+    elif allow_write and not allow_read:
+        glBindImageTexture(index, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F)
+
+
+def bind_ssbo_to_index(ssbo, index):
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, ssbo)
+
+
+def iterate_shader(shader, workgroup_count_x, workgroup_count_y, pre_invoke_function=None, post_invoke_function=None, iterations=1):
+    # Use the shader program
+    shader.use()
+
+    for i in range(iterations):
+        if pre_invoke_function is not None:
+            pre_invoke_function()
+            check_opengl_error()
 
         # Dispatch the compute shader
-        # Assuming local workgroup size is 16x16 in the shader
-        glDispatchCompute(width//16, height//16, 1)
-        
+        glDispatchCompute(workgroup_count_x, workgroup_count_y, 1)
+        check_opengl_error()
+
         # Wait for the compute shader to complete
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT)
-
-        # Swap input and output for the next pass
-        input_state, output_state = output_state, input_state
-
-
-    red_out, green_out, blue_out, alpha_out = texture_rgba32f_to_numpy_arrays(input_state, red.shape[1], red.shape[0])
-    
-    return red_out, green_out, blue_out, alpha_out
-    
+        check_opengl_error()
+        
+        if post_invoke_function is not None:
+            post_invoke_function()
+            check_opengl_error()
+            

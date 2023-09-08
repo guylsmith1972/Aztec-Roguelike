@@ -28,9 +28,6 @@ dll.generate_regions.argtypes = [
     ctypes.POINTER(Location), # seeds
     ctypes.c_int,  # seed_count
     ctypes.POINTER(ctypes.c_float),  # weights
-    ctypes.c_int,  # octaves
-    ctypes.c_float,  # noise_divisor
-    ctypes.c_float,  # horizontal_stretch
     ctypes.POINTER(ctypes.c_int),  # ownership
     ctypes.POINTER(ctypes.c_float)  # distances
 ]
@@ -40,9 +37,6 @@ dll.generate_regions_with_borders.argtypes = [
     ctypes.c_int,  # num_owners
     ctypes.c_int,  # width
     ctypes.c_int,  # height
-    ctypes.c_int,  # octaves
-    ctypes.c_float,  # noise_divisor
-    ctypes.c_float,  # horizontal_stretch
     ctypes.POINTER(ctypes.c_float),  # distances
     ctypes.POINTER(ctypes.c_float)  # normalized
 ]
@@ -53,8 +47,6 @@ dll.generate_heightmap.argtypes = [
     ctypes.POINTER(ctypes.c_float),  # maximum_values
     ctypes.c_int,  # width
     ctypes.c_int,  # height
-    ctypes.c_int,  # octaves
-    ctypes.c_float,  # noise_divisor
     ctypes.POINTER(ctypes.c_float)  # heightmap
 ]
 
@@ -100,7 +92,7 @@ def convert_1d_to_numpy_2d(one_dee, width, height):
     return two_dee_np
 
 # Updated to reflect new function signature and float type
-def generate_noisy_region_map(width, height, seeds, weights, octaves, noise_divisor, horizontal_stretch):
+def generate_noisy_region_map(width, height, seeds, weights):
     seed_count = len(seeds)
     
     seed_array = (Location * seed_count)(*[Location(s[0], s[1]) for s in seeds])
@@ -109,7 +101,7 @@ def generate_noisy_region_map(width, height, seeds, weights, octaves, noise_divi
     ownership_array = (ctypes.c_int * (width * height))()
     distances_array = (ctypes.c_float * (width * height))()
 
-    dll.generate_regions(width, height, seed_array, seed_count, weights_array, octaves, noise_divisor, horizontal_stretch, ownership_array, distances_array)
+    dll.generate_regions(width, height, seed_array, seed_count, weights_array, ownership_array, distances_array)
     
     voronoi_map_np = convert_1d_to_numpy_2d(ownership_array, width, height)
 
@@ -138,7 +130,7 @@ def get_region_info(ownership, width, height, seeds):
     return region_info_list
 
 # Updated to reflect float type
-def generate_heightmap(minimum_altitudes, maximum_altitudes, width, height, octaves, noise_divisor):
+def generate_heightmap(minimum_altitudes, maximum_altitudes, width, height):
     min_vals_flat = minimum_altitudes.flatten().astype(np.float32)
     max_vals_flat = maximum_altitudes.flatten().astype(np.float32)
     
@@ -149,8 +141,6 @@ def generate_heightmap(minimum_altitudes, maximum_altitudes, width, height, octa
         max_vals_flat.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
         width,
         height,
-        octaves,
-        noise_divisor,
         output.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
     )
     
@@ -158,7 +148,7 @@ def generate_heightmap(minimum_altitudes, maximum_altitudes, width, height, octa
     
     return output
 
-def generate_regions_with_borders(ownership, num_owners, width, height, octaves, noise_divisor, horizontal_stretch):
+def generate_regions_with_borders(ownership, num_owners, width, height):
     # Create arrays to hold the output data
     distances = np.zeros((width * height,), dtype=np.float32)
     normalized = np.zeros((width * height,), dtype=np.float32)
@@ -169,9 +159,6 @@ def generate_regions_with_borders(ownership, num_owners, width, height, octaves,
         num_owners,
         width,
         height,
-        octaves,
-        ctypes.c_float(noise_divisor),
-        ctypes.c_float(horizontal_stretch),
         distances.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
         normalized.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
     )
