@@ -8,8 +8,8 @@ import world
 
 def get_assets(tile_size):
     new_spritesheets = {
-        'terrain': spritesheet.SpriteSheet('Assets/Terrain', tile_size, tile_size),
-        'avatars': spritesheet.SpriteSheet('Assets/Avatars', tile_size, tile_size)
+        'terrain': spritesheet.SpriteSheet(configuration.get('spritesheets.terrain', 'Assets/Terrain'), tile_size, tile_size),
+        'avatars': spritesheet.SpriteSheet(configuration.get('spritesheets.avatars', 'Assets/Avatars'), tile_size, tile_size)
     }
     return new_spritesheets
 
@@ -20,11 +20,11 @@ def main():
 
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     
-    current_tile_size = configuration.get('tile_size')
+    current_tile_size = configuration.get('terrain.tile_size', 32)
     spritesheets = get_assets(current_tile_size)
 
     game_player = player.Player(0, 0)
-    game_world = world.World(screen, game_player.get_position(), configuration.get('terrain_chunk_size'), spritesheets)
+    game_world = world.World(screen, game_player.get_position(), configuration.get('terrain.chunk_size', 16), spritesheets)
     game_player.world = game_world
     
     pygame.display.set_caption('Roguelike World')
@@ -33,11 +33,20 @@ def main():
 
     current_movement = None  # Variable to store the current movement direction
     last_move_time = 0       # Variable to store the time of the last movement
-    move_rate_limit = 1.0 / configuration.get('moves_per_second')    # Rate limit for movement 
+    move_rate_limit = 1.0 / configuration.get('movement.moves_per_second', 20)    # Rate limit for movement 
 
     running = True
     while running:
-        key_to_movement = configuration.get('key_to_movement')
+        key_to_movement = configuration.get('movement.key_to_movement', {
+            pygame.K_KP7: [-1, -1],
+            pygame.K_KP8: [0, -1],
+            pygame.K_KP9: [1, -1],
+            pygame.K_KP4: [-1, 0],
+            pygame.K_KP6: [1, 0],
+            pygame.K_KP1: [-1, 1],
+            pygame.K_KP2: [0, 1],
+            pygame.K_KP3: [1, 1]
+        })
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -56,13 +65,13 @@ def main():
                     current_tile_size = new_tile_size
                     spritesheets = get_assets(current_tile_size)
                     game_world.set_spritesheets(spritesheets)
-                    configuration.set('tile_size', current_tile_size)
+                    configuration.set('terrain.tile_size', current_tile_size)
                 elif event.key == pygame.K_KP_PLUS:
                     new_tile_size = utility.find_after(tile_sizes, current_tile_size)
                     current_tile_size = new_tile_size
                     spritesheets = get_assets(current_tile_size)
                     game_world.set_spritesheets(spritesheets)
-                    configuration.set('tile_size', current_tile_size)
+                    configuration.set('terrain.tile_size', current_tile_size)
 
             if event.type == pygame.KEYUP:
                 # If the key released is a movement key, remove its corresponding movement from the stack

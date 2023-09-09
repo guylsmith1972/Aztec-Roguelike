@@ -23,7 +23,7 @@ def erode(bedrock, sediment, water, suspended, iterations=100):
     evaporation_factor = configuration.get('generator.world.deformation.erosion.evaporation_factor', 0.01)
     evaporation_multiplier = configuration.get('generator.world.deformation.erosion.evaporation_multiplier', 10000)
     preciptation_factor = configuration.get('generator.world.deformation.erosion.precipitation_factor', 0.01)
-    sedimentation_factor = configuration.get('generator.world.deformation.erosion.sedimentation_factor', 0.1)
+    sedimentation_factor = configuration.get('generator.world.deformation.erosion.sedimentation_factor', 0.05)
     precipitation_ratio = 1
     atmospheric_water = water.shape[0] * water.shape[1] * preciptation_factor
     
@@ -60,6 +60,8 @@ def erode(bedrock, sediment, water, suspended, iterations=100):
     output_state.cleanup()
     atmospheric_water_ssbo.cleanup()
     erosion.cleanup()
+    
+    print(f'atmospheric_water = {atmospheric_water}')
 
     return bedrock, sediment, water, suspended
         

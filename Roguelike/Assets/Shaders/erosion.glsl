@@ -32,7 +32,7 @@ float get_fast_water_flow(float soil_depth_a, float water_depth_a, float total_l
 
     // Limit the flow to the amount of water in column A
     potential_flow = min(potential_flow, water_depth_a);
-    potential_flow = max(potential_flow, 0.0);
+    potential_flow = max(potential_flow, 0.0); // We don't want to look at inflow
 
     return potential_flow;
 }
@@ -53,7 +53,7 @@ void get_outflows(ivec2 coord, out float[4] water_outflows, out float[4] sedimen
 
     float sediment_height = bedrock_height + sediment_depth;
     float water_level = sediment_height + water_depth + suspended_sediment;
-    float sediment_concentration = (water_level > near_zero) ? suspended_sediment / water_level : 0;
+    float sediment_concentration = (water_depth > near_zero) ? suspended_sediment / water_depth : 0;
 
     float total_potential_outflow = 0.0;
     float total_potential_sediment_transfer = 0.0;
@@ -88,23 +88,19 @@ void get_outflows(ivec2 coord, out float[4] water_outflows, out float[4] sedimen
         total_potential_sediment_transfer += sediment_transfers[i];
     }
 
-    // Normalize outflows and diffusions
-    float normalization_factor_water = (total_potential_outflow > near_zero) ? min(1.0, water_depth / total_potential_outflow) : 1.0;
-    float normalization_factor_sediment = (total_potential_sediment_transfer > near_zero) ? min(1.0, suspended_sediment / total_potential_sediment_transfer) : 1.0;
-
     // Calculate the final state for the cell after distributing water and sediment
     float total_distributed_water = 0.0;
     float total_distributed_sediment = 0.0;
 
     for (int i = 0; i < 4; i++) {
-        water_outflows[i] = water_outflows_potential[i] * normalization_factor_water;
-        sediment_outflows[i] = sediment_transfers[i] * normalization_factor_sediment;
+        water_outflows[i] = (total_potential_outflow > near_zero) ? min(water_depth, max(0, water_outflows_potential[i] / total_potential_outflow)) : 0.0;
+        sediment_outflows[i] = (total_potential_sediment_transfer > near_zero) ? min(suspended_sediment, max(0, sediment_transfers[i] / total_potential_sediment_transfer)) : 0.0;
         total_distributed_water += water_outflows[i];
         total_distributed_sediment += sediment_outflows[i];
     }
 
     // churn is used to determine erosion of sediment later
-    float churn = (water_depth > near_zero) ? total_distributed_water / water_depth : 0;
+    float churn = (water_depth > near_zero) ? min(1.0, max(0.0, total_distributed_water / water_depth)) : 0;
 
     water_depth -= total_distributed_water;
     suspended_sediment -= total_distributed_sediment;

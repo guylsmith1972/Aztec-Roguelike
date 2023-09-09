@@ -422,8 +422,8 @@ def main():
     print(f'sediment shape: {sediment.shape}')
     print(f'suspended_sediment shape: {suspended_sediment.shape}')
 
-    # plot_2d_histogram(bedrock + sediment + suspended_sediment, water_level, x_label='Altitude', y_label='Water Depth', title='Water Depth as a Function of Altitude')
-    # plot_2d_histogram(bedrock, sediment + suspended_sediment, x_label='Bedrock Depth', y_label='Sediment Depth', title='Sediment Depth as a Function of Bedrock Depth')
+    plot_2d_histogram(bedrock + sediment + suspended_sediment, water_level, x_label='Altitude', y_label='Water Depth', title='Water Depth as a Function of Altitude')
+    plot_2d_histogram(bedrock, sediment + suspended_sediment, x_label='Bedrock Depth', y_label='Sediment Depth', title='Sediment Depth as a Function of Bedrock Depth')
     
     reduced_suspended_sediment = remove_outliers(suspended_sediment);
     

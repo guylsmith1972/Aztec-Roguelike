@@ -1,89 +1,48 @@
 {
-  "generator": {
-    "world": {
-      "deformation": {
-        "blurring": {
-          "high_altitude": 11,
-          "low_altitude": 11
-        },
-        "erosion": {
-          "erosion_factor": 0.05,
-          "evaporation_factor": 0.01,
-          "evaporation_multiplier": 10000,
-          "iterations": 1000,
-          "precipitation_factor": 0.01,
-          "sedimentation_factor": 0.1,
-          "shader": "erosion.glsl"
-        }
-      },
-      "islands": {
-        "islands_cutoff": 0.05,
-        "survival_rate": 0.3,
-        "zone_count": 150000
-      },
-      "map": {
-        "height": 1024,
-        "width": 2048
-      },
-      "mountains": {
-        "land_frequencies": {
-          "highlands": 0.3,
-          "lowlands": 0.5,
-          "mountains": 0.2
-        },
-        "survival_rate": 0.5,
-        "zone_count": 30
-      },
-      "oceans": {
-        "continental_shelf_cutoff": 0.25,
-        "ratio": 0.55,
-        "zone_count": 30
-      },
-      "regions": {
-        "zone_count": 3000
-      },
-      "topology": {
-        "continental shelf": [
-          1,
-          -0.5,
-          -0.9
-        ],
-        "deep ocean": [
-          0,
-          -1,
-          -0.9
-        ],
-        "highlands": [
-          6,
-          0.3,
-          0.6
-        ],
-        "islands": [
-          3,
-          -0.9,
-          0
-        ],
-        "land": [
-          4,
-          0,
-          1
-        ],
-        "littoral": [
-          2,
-          -0.9,
-          0
-        ],
-        "lowlands": [
-          5,
-          0.01,
-          0.3
-        ],
-        "mountains": [
-          7,
-          0.6,
-          1
-        ]
-      }
-    }
+  "movement": {
+    "key_to_movement": {
+      "1073741913": [
+        -1,
+        1
+      ],
+      "1073741914": [
+        0,
+        1
+      ],
+      "1073741915": [
+        1,
+        1
+      ],
+      "1073741916": [
+        -1,
+        0
+      ],
+      "1073741918": [
+        1,
+        0
+      ],
+      "1073741919": [
+        -1,
+        -1
+      ],
+      "1073741920": [
+        0,
+        -1
+      ],
+      "1073741921": [
+        1,
+        -1
+      ]
+    },
+    "moves_per_second": 20
+  },
+  "spritesheets": {
+    "avatars": "Assets/Avatars",
+    "terrain": "Assets/Terrain"
+  },
+  "terrain": {
+    "chunk_size": 16,
+    "max_invalid_chunks": 100,
+    "tile_size": 8
   }
 }
