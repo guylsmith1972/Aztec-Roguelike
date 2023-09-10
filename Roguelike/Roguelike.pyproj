@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fe791785-016e-4373-ad73-cb7f79ace54a</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>main.py</StartupFile>
+    <StartupFile>noise_testing.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -25,7 +25,7 @@
     <Compile Include="colorization.py" />
     <Compile Include="configuration.py" />
     <Compile Include="ecosystems.py" />
-    <Compile Include="erosion.py" />
+    <Compile Include="BackBurner\erosion.py" />
     <Compile Include="gpu.py" />
     <Compile Include="gpu_shader.py" />
     <Compile Include="gpu_ssbo.py" />
@@ -33,13 +33,17 @@
     <Compile Include="inventory.py" />
     <Compile Include="item.py" />
     <Compile Include="native_code.py" />
+    <Compile Include="noise.py" />
+    <Compile Include="noise_testing.py" />
+    <Compile Include="noisy_voronoi.py" />
     <Compile Include="player.py" />
+    <Compile Include="plotting.py" />
     <Compile Include="terrain_chunk.py" />
     <Compile Include="main.py" />
     <Compile Include="spritesheet.py" />
     <Compile Include="terrain.py" />
     <Compile Include="utility.py" />
-    <Compile Include="voronoi.py" />
+    <Compile Include="BackBurner\voronoi.py" />
     <Compile Include="world.py" />
   </ItemGroup>
   <ItemGroup>
@@ -56,8 +60,9 @@
     <Content Include="Assets\Raw\Terrain\00086-540790288.png" />
     <Content Include="Assets\Raw\Terrain\00097-540790299.png" />
     <Content Include="Assets\Raw\Terrain\00111-540790313.png" />
-    <Content Include="Assets\Shaders\erosion_old.glsl" />
-    <Content Include="Assets\Shaders\erosion.glsl" />
+    <Content Include="BackBurner\Shaders\erosion_old.glsl" />
+    <Content Include="BackBurner\Shaders\erosion.glsl" />
+    <Content Include="Assets\Shaders\noisy_voronoi.glsl" />
     <Content Include="Assets\Spritesheets\terrain_sheet.png" />
     <Content Include="config.json" />
     <Content Include="requirements.txt" />
@@ -68,6 +73,8 @@
     <Folder Include="Assets\Raw\" />
     <Folder Include="Assets\Raw\Terrain\" />
     <Folder Include="Assets\Spritesheets\" />
+    <Folder Include="BackBurner\" />
+    <Folder Include="BackBurner\Shaders\" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env1\">

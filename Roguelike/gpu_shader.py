@@ -31,9 +31,18 @@ class Shader:
             glUniform1i(location, *values)
         elif type == "1ui":
             glUniform1ui(location, *values)
-        else:  # ... Add more uniform types as needed
+        elif type == "1fv":  # For setting arrays of vec4 values
+            count, data = values
+            glUniform4fv(location, count, data)
+        elif type == "sampler2D":
+            texture, texture_unit = values
+            glActiveTexture(GL_TEXTURE0 + texture_unit)  # activate the texture unit
+            glBindTexture(GL_TEXTURE_2D, texture)        # bind the texture
+            glUniform1i(location, texture_unit)          # set the sampler2D uniform to the texture unit index
+        else:
             raise RuntimeError(f'Cannot set uniform for type {type}')
-        
+
+
     def get_workgroup_size(self):
         # Assuming local workgroup size is 16x16 in the shader
         return 16, 16

@@ -15,12 +15,12 @@ def initialize_opengl_context(width=800, height=600):
     # Initialize pygame
     pygame.init()
     
+    # set the OpenGL version (e.g., for OpenGL 4.3)
+    pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 4)
+    pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
+
     # Set the display mode with OpenGL flag
     display = pygame.display.set_mode((width, height), DOUBLEBUF | OPENGL)
-    
-    # Optionally set the OpenGL version (e.g., for OpenGL 3.3)
-    # pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
-    # pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
     
     # Print the OpenGL version (useful for debugging)
     print("OpenGL version:", glGetString(GL_VERSION).decode('utf-8'))

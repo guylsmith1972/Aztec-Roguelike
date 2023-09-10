@@ -13,8 +13,8 @@ def erode(bedrock, sediment, water, suspended, iterations=100):
     
     print(f'workgroup size: {num_workgroups_x}, {num_workgroups_y}')
 
-    input_state = Texture(arrays=[bedrock, sediment, water, suspended])
-    output_state = Texture(width=width, height=height)
+    input_state = Texture(data_format='RGBA', data_dict={'red': bedrock, 'green': sediment, 'blue': water, 'alpha': suspended})
+    output_state = Texture(data_format='RGBA', width=width, height=height)
 
     # Create SSBO for cell_count
     atmospheric_water_ssbo = SSBO(num_workgroups_x * num_workgroups_y, 'uint32')
@@ -54,7 +54,8 @@ def erode(bedrock, sediment, water, suspended, iterations=100):
 
     erosion.iterate(num_workgroups_x, num_workgroups_y, pre_invoke_function=pre_invoke, post_invoke_function=post_invoke, iterations=iterations)
 
-    bedrock, sediment, water, suspended = input_state.to_numpy()
+    numpy_dict = input_state.to_numpy()
+    bedrock, sediment, water, suspended = numpy_dict['red'], numpy_dict['green'], numpy_dict['blue'], numpy_dict['alpha']
 
     input_state.cleanup()
     output_state.cleanup()
