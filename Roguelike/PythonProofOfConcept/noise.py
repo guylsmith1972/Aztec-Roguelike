@@ -1,3 +1,4 @@
+from lcg import LCG
 import numpy as np
 
 
@@ -9,8 +10,10 @@ def normalize_array(arr):
     return normalized_arr
 
 
-def get_noise(size, roughness, initial_value):
+def get_noise(size, roughness, initial_value, seed=42):
     # Initialize grid with NaN values
+    lcg = LCG(seed=seed)
+
     grid = np.full((size, size), np.nan)
     
     # Set initial corner value
@@ -25,7 +28,7 @@ def get_noise(size, roughness, initial_value):
         for x in range(0, size, step):
             for y in range(0, size, step):
                 avg = (grid[x, y] + grid[(x+step)%size, y] + grid[x, (y+step)%size] + grid[(x+step)%size, (y+step)%size]) / 4.0
-                grid[(x+half_step)%size, (y+half_step)%size] = avg + (np.random.rand() - 0.5) * roughness * step
+                grid[(x+half_step)%size, (y+half_step)%size] = avg + (lcg.random() - 0.5) * roughness * step
 
         # Square step with wrapping
         for x in range(0, size, half_step):
@@ -36,7 +39,7 @@ def get_noise(size, roughness, initial_value):
                       + grid[x, (y + half_step) % size]
 
                 avg = total / 4
-                grid[x, y] = avg + (np.random.rand() - 0.5) * roughness * step
+                grid[x, y] = avg + (lcg.random() - 0.5) * roughness * step
 
         step //= 2
 

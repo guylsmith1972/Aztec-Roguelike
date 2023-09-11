@@ -1,13 +1,10 @@
 
-import math
-import random
-import numpy as np
+import configuration
 import ctypes
+import numpy as np
 
 # Load the DLL
-dll = ctypes.CDLL("./AztecClientBL.dll") 
-
-import ctypes
+dll = ctypes.CDLL(configuration.get('files.dll.aztec', "./AztecClientBL.dll"))
 
 # Define the constants and structures as per the provided definitions
 MAX_NEIGHBORS = 20
@@ -81,8 +78,15 @@ dll.free_array_1d.argtypes = [ctypes.POINTER(ctypes.c_int)]
 
 dll.free_region_info_array.argtypes = [ctypes.POINTER(RegionInfo)]
 
+# Define the prototype for the get_noise function in the DLL
+dll.get_noise.argtypes = [
+    ctypes.c_int,                      # size
+    ctypes.c_int,                      # initialization_depth
+    ctypes.c_float,                   # roughness
+    ctypes.c_ulong,                    # seed
+    ctypes.POINTER(ctypes.c_float)    # output
+]
 
-# Helper function remains unchanged
 def convert_1d_to_numpy_2d(one_dee, width, height):
     two_dee_np = np.zeros((height, width), dtype=np.int32)
     for y in range(height):
@@ -184,3 +188,18 @@ def find_river_paths(heights):
     )
 
     return water_volume_np
+
+def generate_noise(size, initialization_depth, roughness, seed=42):
+    # Create an output numpy array
+    output = np.zeros((size, size), dtype=np.float32)
+    
+    # Call the DLL function
+    dll.get_noise(
+        size,
+        initialization_depth,
+        roughness,
+        seed,
+        output.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+    )
+    
+    return output

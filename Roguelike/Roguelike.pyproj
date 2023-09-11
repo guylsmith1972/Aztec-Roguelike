@@ -32,8 +32,9 @@
     <Compile Include="gpu_texture.py" />
     <Compile Include="inventory.py" />
     <Compile Include="item.py" />
+    <Compile Include="lcg.py" />
     <Compile Include="native_code.py" />
-    <Compile Include="noise.py" />
+    <Compile Include="PythonProofOfConcept\noise.py" />
     <Compile Include="noise_testing.py" />
     <Compile Include="noisy_voronoi.py" />
     <Compile Include="player.py" />
@@ -75,6 +76,7 @@
     <Folder Include="Assets\Spritesheets\" />
     <Folder Include="BackBurner\" />
     <Folder Include="BackBurner\Shaders\" />
+    <Folder Include="PythonProofOfConcept\" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env1\">

@@ -1,5 +1,8 @@
 {
   "files": {
+    "dll": {
+      "aztec": "./AztecClientBL.dll"
+    },
     "shaders": {
       "foo": "foo.glsl",
       "noisy_voronoi": "noisy_voronoi.glsl"
