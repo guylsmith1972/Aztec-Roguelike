@@ -1,19 +1,58 @@
+from native_code import generate_noise
+from terrain_chunk import TerrainChunk
+from terrain_generator import generate_seeds, fill_chunk
+import configuration
 import math
 import pygame
 import random
-from terrain_chunk import TerrainChunk
 import terrain
 
 
 class World:
     def __init__(self, screen, player_position, terrain_chunk_size, spritesheets):
+        self.voronoi_seeds = None
+        self.noise = None
         self.terrain_types = terrain.Terrain(spritesheets['terrain'])
         self.player_position = player_position
         self.creatures = []  # List of creatures in the world
         self.spritesheets = spritesheets
         self.terrain_chunk_size = terrain_chunk_size
         self.terrain_chunks = set()  # We need to create an empty set first because calling self.get_relevant_terrain_chunks() needs this to be defined as a set instead of as None
+
+        self.define_world()
         self.terrain_chunks = self.get_relevant_terrain_chunks(screen)
+
+    def cleanup(self):
+        for chunk in self.terrain_chunks:
+            chunk.cleanup()
+        for name, spritesheet in self.spritesheets.items():
+            spritesheet.cleanup()
+
+    def define_world(self):
+        terrain_spritesheet = self.get_spritesheets()['terrain']
+        region_definitions = configuration.get('world.generator.cells.weights', [
+            ('dirt', 0.3),
+            ('granite', 9),
+            ('grass', 9),
+            ('grass-thick', 2),
+            ('stones-small', 2),
+            ('stones-medium', 2)
+        ])
+        world_width = configuration.get('world.generator.size.width', 10000)
+        world_height = configuration.get('world.generator.size.height', 5000)
+        cell_count = configuration.get('world.generator.cells.count', 5000)
+        rng_seed_x = configuration.get('world.generator.random.seed.x', 42)
+        rng_seed_y = configuration.get('world.generator.random.seed.y', 42)
+        rng_seed_chooser = configuration.get('world.generator.random.seed.chooser', 42)
+        self.voronoi_seeds = generate_seeds(terrain_spritesheet, region_definitions, world_width, world_height, cell_count, rng_seed_x, rng_seed_y, rng_seed_chooser)
+
+        rng_seed_noise = configuration.get('world.generator.random.seed.noise', 42)
+        self.noise = generate_noise(1024, 5, 1, rng_seed_noise)
+        
+    def get_chunk_values(self, x, y, size):
+        print(f'getting chunk values at {x}, {y}: {size}')
+        coverage, _ = fill_chunk(self.voronoi_seeds, x, y, size, self.noise)
+        return coverage
         
     def set_spritesheets(self, spritesheets):
         self.spritesheets = spritesheets
@@ -62,16 +101,16 @@ class World:
         terrain_chunk.set_terrain_at(math.floor(random.random() * terrain_chunk.size), math.floor(random.random() * terrain_chunk.size), terrain_spritesheet.get_index('wall'))
 
 
-    def render(self, screen, center_x, center_y):
+    def render(self, display, center_x, center_y):
         # Render terrain_chunks
         for terrain_chunk in self.terrain_chunks:
-            terrain_chunk.render(screen, center_x, center_y)
+            terrain_chunk.render(display, center_x, center_y)
 
         # TODO: Render items
         # TODO: Render creatures
             
         # Render player:
-        self.spritesheets['avatars'].render(screen, 0, self.player_position[0], self.player_position[1], self.player_position[0], self.player_position[1])
+        # self.spritesheets['avatars'].render(display, 0, self.player_position[0], self.player_position[1], self.player_position[0], self.player_position[1])
         
     def is_passable_at(self, world_x, world_y):
         for terrain_chunk in self.terrain_chunks:

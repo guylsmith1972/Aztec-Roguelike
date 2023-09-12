@@ -17,14 +17,15 @@ def main():
     tile_sizes = [8, 10, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128]
     # Initialize pygame
     pygame.init()
-
-    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 4)
+    pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
+    screen = pygame.display.set_mode((0, 0), pygame.DOUBLEBUF | pygame.OPENGL)
     
     current_tile_size = configuration.get('terrain.tile_size', 32)
     spritesheets = get_assets(current_tile_size)
 
     game_player = player.Player(0, 0)
-    game_world = world.World(screen, game_player.get_position(), configuration.get('terrain.chunk_size', 16), spritesheets)
+    game_world = world.World(screen, game_player.get_position(), configuration.get('terrain.chunk_size', 64), spritesheets)
     game_player.world = game_world
     
     pygame.display.set_caption('Roguelike World')
@@ -94,6 +95,8 @@ def main():
         game_world.render(screen, current_player_position[0], current_player_position[1])
 
         pygame.display.flip()
+
+    game_world.cleanup()
 
     pygame.quit()
 

@@ -1,11 +1,107 @@
 {
   "files": {
     "dll": {
-      "aztec": "./AztecClientBL.dll"
+      "aztec": "AztecClientBL.dll"
     },
     "shaders": {
-      "foo": "foo.glsl",
-      "noisy_voronoi": "noisy_voronoi.glsl"
+      "noisy_voronoi": {
+        "compute": "noisy_voronoi.glsl"
+      },
+      "tile_grid_renderer": {
+        "fragment": "tile_grid_renderer.glsl",
+        "vertex": "tile_grid_renderer.glsl"
+      }
+    }
+  },
+  "movement": {
+    "key_to_movement": {
+      "1073741913": [
+        -1,
+        1
+      ],
+      "1073741914": [
+        0,
+        1
+      ],
+      "1073741915": [
+        1,
+        1
+      ],
+      "1073741916": [
+        -1,
+        0
+      ],
+      "1073741918": [
+        1,
+        0
+      ],
+      "1073741919": [
+        -1,
+        -1
+      ],
+      "1073741920": [
+        0,
+        -1
+      ],
+      "1073741921": [
+        1,
+        -1
+      ]
+    },
+    "moves_per_second": 20
+  },
+  "spritesheets": {
+    "avatars": "Assets/Avatars",
+    "terrain": "Assets/Terrain"
+  },
+  "terrain": {
+    "chunk_size": 64,
+    "max_invalid_chunks": 100,
+    "tile_size": 8
+  },
+  "world": {
+    "generator": {
+      "cells": {
+        "count": 5000,
+        "weights": [
+          [
+            "dirt",
+            0.3
+          ],
+          [
+            "granite",
+            9
+          ],
+          [
+            "grass",
+            9
+          ],
+          [
+            "grass-thick",
+            2
+          ],
+          [
+            "stones-small",
+            2
+          ],
+          [
+            "stones-medium",
+            2
+          ]
+        ]
+      },
+      "random": {
+        "seed": {
+          "chooser": 42,
+          "noise": 42,
+          "x": 42,
+          "y": 42
+        }
+      },
+      "size": {
+        "height": 500,
+        "width": 1000
+      }
     }
   }
 }

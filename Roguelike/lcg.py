@@ -8,3 +8,6 @@ class LCG:
     def random(self):
         self.state = (self.a * self.state + self.c) % self.m
         return self.state / self.m
+
+    def random_range(self, low, high):
+        return self.random() * (high-low) + low

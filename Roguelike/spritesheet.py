@@ -4,6 +4,7 @@ import math
 import os
 import pygame
 
+from gpu_texture import Texture
 from PIL import Image
 
 
@@ -12,9 +13,14 @@ class SpriteSheet:
         self.directory = directory
         self.tile_width = tile_width
         self.tile_height = tile_height
+        self.sheet_map = bidict.bidict(json.load(open(f'{directory}/spritemap.json', 'r')))
         self.sheet_path = self._find_or_create_sheet()
         self.sheet_image = pygame.image.load(self.sheet_path)
-        self.sheet_map = bidict.bidict(json.load(open(f'{directory}/spritemap.json', 'r')))
+        pil_image = Image.frombytes("RGBA", self.sheet_image.get_size(), pygame.image.tostring(self.sheet_image, "RGBA"))
+        self.texture = Texture({"type": "image", "data": pil_image}, wrap_s='clamp', wrap_t='clamp')
+
+    def cleanup(self):
+        self.texture.cleanup()
 
     def _create_image_grid(self, directory, output_path):
         # Step 1: Collect all image paths in the directory
@@ -57,6 +63,16 @@ class SpriteSheet:
         sheet_path = os.path.join(self.directory, f'spritesheet_{self.tile_width}_{self.tile_height}.png')
         self._create_image_grid(self.directory, sheet_path)
         return sheet_path
+
+    def get_dimensions_in_tiles(self):
+        # Get the total dimensions of the spritesheet image in pixels
+        image_width, image_height = self.sheet_image.get_size()
+
+        # Calculate the dimensions in tiles by dividing the total dimensions by the dimensions of each tile
+        tiles_width = image_width // self.tile_width
+        tiles_height = image_height // self.tile_height
+
+        return (tiles_width, tiles_height)
     
     def get_index(self, tile_name):
         return self.sheet_map[tile_name] if tile_name in self.sheet_map else -1
@@ -66,24 +82,6 @@ class SpriteSheet:
     
     def get_all_terrain_names(self):
         return self.sheet_map.keys()
-
-    def render(self, screen, tile_index, world_x, world_y, center_x, center_y):
-        screen_x = (world_x - center_x) * self.tile_width + (screen.get_width() - self.tile_width) / 2
-        screen_y = (world_y - center_y) * self.tile_height + (screen.get_height() - self.tile_height) / 2
-
-        # Use blit_to_surface() to render the tile on the screen
-        self.blit_to_surface(screen, tile_index, screen_x, screen_y)
-
-    def blit_to_surface(self, surface, tile_index, x, y):
-        cols = self.sheet_image.get_width() // self.tile_width
-        row = tile_index // cols
-        col = tile_index % cols
-
-        # Determine the source rectangle for the tile
-        source_rect = pygame.Rect(col * self.tile_width, row * self.tile_height, self.tile_width, self.tile_height)
-    
-        # Blit (copy) the tile from the sprite sheet onto the surface at the specified location
-        surface.blit(self.sheet_image, (x, y), source_rect)
 
     def screen_to_world(self, screen, screen_x, screen_y, center_x, center_y):
         world_x = (screen_x - (screen.get_width() - self.tile_width) / 2) / self.tile_width + center_x

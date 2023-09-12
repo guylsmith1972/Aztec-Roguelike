@@ -89,9 +89,3 @@ class RegionManager:
         
         return new_region
 
-# Test the RegionManager
-cloud = Cloud()
-cloud.generate_seeds_for_region(0, 0)
-region_manager = RegionManager(cloud)
-requested_region = region_manager.request_region(0, 0)
-print(requested_region.ownership_data)

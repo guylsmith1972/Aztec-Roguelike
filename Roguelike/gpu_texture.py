@@ -24,24 +24,41 @@ class Texture:
         'clamp': GL_CLAMP_TO_EDGE
     }
 
-    def __init__(self, width=None, height=None, data_dict=None, data_format='RGBA', min_filter='nearest', mag_filter='nearest', wrap_s='repeat', wrap_t='repeat'):
+    def __init__(self, texture_config, min_filter='nearest', mag_filter='nearest', wrap_s='repeat', wrap_t='repeat'):
         '''
-        Initialize the Texture class with either specified width and height or from given numpy arrays.
+        Initialize the Texture class based on a configuration dictionary.
         '''
         self.texture = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.texture)
 
-        self.data_format = data_format
+        def init_empty():
+            width = texture_config["width"]
+            height = texture_config["height"]
+            self.data_format = texture_config["data_format"]
+            glTexImage2D(GL_TEXTURE_2D, 0, self.FORMAT_MAPPING[self.data_format], width, height, 0, Texture.PIXEL_FORMAT_MAPPING[self.data_format], GL_FLOAT, None)
 
-        if width and height:
-            # Create an empty texture based on the specified format
-            glTexImage2D(GL_TEXTURE_2D, 0, self.FORMAT_MAPPING[data_format], width, height, 0, GL_RGBA, GL_FLOAT, None)
-        elif data_dict:
-            # Create texture from numpy arrays
-            print('extracting data from numpy arrays')
-            self.from_numpy(data_dict, do_bind=False)
-        
-        print('setting texture parameters')
+        def init_image():
+            self.data_format = "RGBA"
+            self._from_pillow_image(texture_config["data"])
+
+        def init_numpy():
+            self.data_format = texture_config["data_format"]
+            self.from_numpy(texture_config["data"], do_bind=False)
+
+        # Simulating switch-case using a dictionary
+        switcher = {
+            "empty": init_empty,
+            "image": init_image,
+            "numpy": init_numpy
+        }
+
+        # Get the function from switcher dictionary and execute it
+        func = switcher.get(texture_config.get("type"), lambda: "Invalid type")
+        func()
+
+        if not hasattr(self, "data_format"):
+            raise ValueError(f"Unsupported texture type: {texture_config.get('type')}")
+
         # Set texture parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, self.FILTER_MAPPING[min_filter])
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, self.FILTER_MAPPING[mag_filter])
@@ -49,6 +66,14 @@ class Texture:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, self.WRAP_MAPPING[wrap_t])
         
         glBindTexture(GL_TEXTURE_2D, 0)
+        
+    # def __del__(self):
+    #     self.cleanup()
+
+    def _from_pillow_image(self, img):
+        img_data = np.array(img.convert("RGBA"))
+        glTexImage2D(GL_TEXTURE_2D, 0, self.FORMAT_MAPPING[self.data_format], img.width, img.height, 0, 
+                     self.PIXEL_FORMAT_MAPPING[self.data_format], GL_UNSIGNED_BYTE, img_data)
     
     def from_numpy(self, data_dict, do_bind=True):
         '''
@@ -59,29 +84,24 @@ class Texture:
         assert all(shapes[0] == shape for shape in shapes), 'All input arrays must have the same shape'
 
         # Determine the texture format based on dictionary keys
-        print('getting channels and format')  
         channels = ''.join([ch[0].upper() for ch in data_dict.keys()])
         gl_format = self.FORMAT_MAPPING[channels]
     
         # Concatenate the numpy arrays based on the keys present
-        print('concatenatting arrays')
         combined_array = np.stack(list(data_dict.values()), axis=-1).astype(np.float32)
         height, width, _ = combined_array.shape
 
         # Bind the texture
         if do_bind:
-            print('binding texture')
             glBindTexture(GL_TEXTURE_2D, self.texture)
             gpu.check_opengl_error()
     
         # Upload data to texture
-        print('uploading data')
         glTexImage2D(GL_TEXTURE_2D, 0, gl_format, width, height, 0, self.PIXEL_FORMAT_MAPPING[self.data_format], GL_FLOAT, combined_array)
         gpu.check_opengl_error()
     
         # Unbind the texture
         if do_bind:
-            print('unbinding texture')
             glBindTexture(GL_TEXTURE_2D, 0)
             gpu.check_opengl_error()
     

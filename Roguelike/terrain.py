@@ -23,5 +23,5 @@ class Terrain:
              self.terrain_types[key] = value
 
     def is_passable(self, terrain_index):
-        return self.terrain_types[terrain_index][1]
+        return self.terrain_types[int(terrain_index)][1]
     

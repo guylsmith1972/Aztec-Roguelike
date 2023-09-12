@@ -1,15 +1,9 @@
 from collections import deque
-from tkinter import SE
+from gpu_shader import get_shader, RENDER
+from gpu_texture import Texture
 from item import Item
-
 import configuration
 import numpy as np
-import opensimplex
-import pygame
-
-
-# Vectorized version of the get_tile_index function
-_vectorized_get_tile_index = None
 
 
 class TerrainChunk:
@@ -30,36 +24,11 @@ class TerrainChunk:
         self.tile_height = world.get_spritesheets()['terrain'].tile_height
         self.terrain_indices = None
         self.generate_terrain()
-        
-    @staticmethod
-    def generate_vectorized_getter(spritesheet):
-        def generate_getter():
-            # Hardcode the values for each tile name
-            granite = spritesheet.get_index('granite')
-            stones_medium = spritesheet.get_index('stones-medium')
-            stones_small = spritesheet.get_index('stones-small')
-            dirt = spritesheet.get_index('dirt')
-            grass = spritesheet.get_index('grass')
-            grass_thick = spritesheet.get_index('grass-thick')
-    
-            def corrected_optimized_get_tile_name(n):
-                if n < -0.9:
-                    return granite
-                elif n < -0.8:
-                    return stones_medium
-                elif n < -0.7:
-                    return stones_small
-                elif n < -0.6:
-                    return dirt
-                elif n < 0.2:
-                    return grass
-                else:
-                    return grass_thick
-    
-            return corrected_optimized_get_tile_name
-        
-        global _vectorized_get_tile_index
-        _vectorized_get_tile_index = np.vectorize(generate_getter())
+        self.terrain_texture = Texture({"type": "numpy", "data_format": "R", "data": {"red": self.terrain_indices / np.max(self.terrain_indices)}},
+                                       min_filter='nearest', mag_filter='nearest', wrap_s='clamp', wrap_t='clamp')
+
+    def cleanup(self):
+        self.terrain_texture.cleanup()
 
     @classmethod
     def get_or_create(cls, world_x, world_y, size, world):
@@ -102,62 +71,31 @@ class TerrainChunk:
         self.terrain_indices[y][x] = terrain_index
 
     def generate_terrain(self):
-        terrain_spritesheet = self.world.get_spritesheets()['terrain']
-        if _vectorized_get_tile_index is None:
-            TerrainChunk.generate_vectorized_getter(terrain_spritesheet)
-            
-        # Create numpy arrays for x and y coordinates
-        x_coords = np.arange(self.world_x, self.world_x + self.size) / 15.0
-        y_coords = np.arange(self.world_y, self.world_y + self.size) / 15.0
+        self.terrain_indices = self.world.get_chunk_values(self.world_x, self.world_y, self.size)   
 
-        # Generate the noise values for the entire grid using the 1D arrays
-        noise_values = opensimplex.noise2array(x_coords, y_coords)
-
-        # Use the vectorized function on the entire noise_values array
-        self.terrain_indices = _vectorized_get_tile_index(noise_values)
-        
         # Call into the world object to allow it to modify the chunk
         self.world.modify_chunk(self)
 
-    def prerender(self):
-        terrain_spritesheet = self.world.get_spritesheets()['terrain']
-
-        # Cache constant values outside the loop
-        tile_width = terrain_spritesheet.tile_width
-        tile_height = terrain_spritesheet.tile_height
-
-        # Create a new surface to render the terrain_chunk to
-        surface_width = self.size * tile_width
-        surface_height = self.size * tile_height
-        terrain_chunk_surface = pygame.Surface((surface_width, surface_height))
-
-        # Flatten the terrain_indices for reduced indexing overhead
-        flattened_indices = [index for row in self.terrain_indices for index in row]
-
-        # Render the entire terrain_chunk to the surface using single loop iteration
-        for idx, tile_index in enumerate(flattened_indices):
-            x = (idx % self.size) * tile_width
-            y = (idx // self.size) * tile_height
-            terrain_spritesheet.blit_to_surface(terrain_chunk_surface, tile_index, x, y)
-
-        return terrain_chunk_surface
-
-    def render(self, screen, center_x, center_y):
-        terrain_spritesheet = self.world.get_spritesheets()['terrain']
-
-        # Check if the terrain_chunk needs to be prerendered
-        if self._dirty or self.tile_width != terrain_spritesheet.tile_width or self.tile_height != terrain_spritesheet.tile_height:
-            self.prerendered_image = self.prerender()
-            self._dirty = False
-            self.tile_width = terrain_spritesheet.tile_width
-            self.tile_height = terrain_spritesheet.tile_height
+    def render(self, display, center_x, center_y):
+        screen_x = int((self.world_x - center_x) * self.tile_width + (display.get_width() - self.tile_width) / 2)
+        screen_y = int((self.world_y - center_y) * self.tile_height + (display.get_height() - self.tile_height) / 2)
     
-        # Calculate the screen's position based on the center coordinates
-        screen_x = (self.world_x - center_x) * self.tile_width + (screen.get_width() - self.tile_width) / 2
-        screen_y = (self.world_y - center_y) * self.tile_height + (screen.get_height() - self.tile_height) / 2
+        terrain_spritesheet = self.world.get_spritesheets()['terrain']        
+        shader = get_shader(RENDER, 'tile_grid_renderer')
+        shader.use()
+        
+        target_width, target_height = self.tile_width * self.size, self.tile_height * self.size
     
-        # Blit the prerendered image to the screen
-        screen.blit(self.prerendered_image, (screen_x, screen_y))
+        shader.set_uniform('spritesheet', 'sampler2D', terrain_spritesheet.texture.texture, 0)
+        shader.set_uniform('tile_indices', 'sampler2D', self.terrain_texture.texture, 1)
+
+        shader.set_uniform('target_dimensions', '2i', target_width, target_height)
+        spritesheet_dimensions = terrain_spritesheet.get_dimensions_in_tiles()
+        shader.set_uniform('spritesheet_dimensions', '2i', *spritesheet_dimensions)
+        shader.set_uniform('tile_dimensions', '2i', self.tile_width, self.tile_height)
+    
+        # Render the shader to the pygame screen at display, screen_y
+        shader.render(screen_x, screen_y, target_width, target_height)
 
     def get_terrain_index_at(self, world_x, world_y):
         # Calculate relative coordinates within the terrain_chunk
