@@ -20,11 +20,9 @@ class TerrainChunk:
         self.features = []  # List of immobile objects in the terrain_chunk
         self._dirty = True  # True if the terrain_image needs to be generated
         self.prerendered_image = None
-        self.tile_width = world.get_spritesheets()['terrain'].tile_width
-        self.tile_height = world.get_spritesheets()['terrain'].tile_height
         self.terrain_indices = None
         self.generate_terrain()
-        self.terrain_texture = Texture({"type": "numpy", "data_format": "R", "data": {"red": self.terrain_indices / np.max(self.terrain_indices)}},
+        self.terrain_texture = Texture({"type": "numpy", "data_format": "R", "data": {"red": self.terrain_indices}},
                                        min_filter='nearest', mag_filter='nearest', wrap_s='clamp', wrap_t='clamp')
 
     def cleanup(self):
@@ -77,24 +75,25 @@ class TerrainChunk:
         self.world.modify_chunk(self)
 
     def render(self, display, center_x, center_y):
-        screen_x = int((self.world_x - center_x) * self.tile_width + (display.get_width() - self.tile_width) / 2)
-        screen_y = int((self.world_y - center_y) * self.tile_height + (display.get_height() - self.tile_height) / 2)
-    
-        terrain_spritesheet = self.world.get_spritesheets()['terrain']        
+        terrain_spritesheet = self.world.get_spritesheets()['terrain']     
+        tile_width = terrain_spritesheet.tile_width
+        tile_height = terrain_spritesheet.tile_height
         shader = get_shader(RENDER, 'tile_grid_renderer')
         shader.use()
         
-        target_width, target_height = self.tile_width * self.size, self.tile_height * self.size
+        target_width, target_height = tile_width * self.size, tile_height * self.size
     
         shader.set_uniform('spritesheet', 'sampler2D', terrain_spritesheet.texture.texture, 0)
         shader.set_uniform('tile_indices', 'sampler2D', self.terrain_texture.texture, 1)
 
-        shader.set_uniform('target_dimensions', '2i', target_width, target_height)
+        shader.set_uniform('target_dimensions_in_pixels', '2i', target_width, target_height)
         spritesheet_dimensions = terrain_spritesheet.get_dimensions_in_tiles()
-        shader.set_uniform('spritesheet_dimensions', '2i', *spritesheet_dimensions)
-        shader.set_uniform('tile_dimensions', '2i', self.tile_width, self.tile_height)
+        shader.set_uniform('spritesheet_dimensions_in_tiles', '2i', *spritesheet_dimensions)
+        shader.set_uniform('tile_dimensions_in_pixels', '2i', tile_width, tile_height)
     
         # Render the shader to the pygame screen at display, screen_y
+        screen_x = int((self.world_x - center_x) * tile_width + (display.get_width() - tile_width) / 2)
+        screen_y = int((self.world_y - center_y) * tile_height + (display.get_height() - tile_height) / 2)
         shader.render(screen_x, screen_y, target_width, target_height)
 
     def get_terrain_index_at(self, world_x, world_y):

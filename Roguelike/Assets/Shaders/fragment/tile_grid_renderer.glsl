@@ -9,7 +9,7 @@ uniform ivec2 target_dimensions_in_pixels;
 uniform ivec2 spritesheet_dimensions_in_tiles; 
 uniform ivec2 tile_dimensions_in_pixels;
 
-void main() {
+void real_main() {
     // Convert fragCoord from [-1,1] to pixel coordinates [0, width), [0, height)
     ivec2 pixel_coord = ivec2((fragCoord + vec2(1.0)) * 0.5 * vec2(target_dimensions_in_pixels));
 
@@ -19,7 +19,7 @@ void main() {
     // Convert to [0,1] range for sampling from tile_indices
     vec2 index_uv = vec2(index_tile_pos) / (vec2(target_dimensions_in_pixels) / vec2(tile_dimensions_in_pixels));
     
-    int tile_index = int(texture(tile_indices, index_uv).r * spritesheet_dimensions_in_tiles.x * spritesheet_dimensions_in_tiles.y);
+    int tile_index = int(texture(tile_indices, index_uv).r);
 
     ivec2 spritesheet_tile_coord = ivec2(tile_index % spritesheet_dimensions_in_tiles.x,
                                          tile_index / spritesheet_dimensions_in_tiles.x);
@@ -31,7 +31,26 @@ void main() {
     ivec2 spritesheet_pixel_coord = spritesheet_corner_pixel_coord + pixel_offset;
 
     // Convert to UV coordinates for sampling
-    vec2 spritesheet_uv = vec2(spritesheet_pixel_coord) / vec2(spritesheet_dimensions_in_tiles * tile_dimensions_in_pixels);
+    vec2 spritesheet_uv = (vec2(spritesheet_pixel_coord) + vec2(0.5)) / vec2(spritesheet_dimensions_in_tiles * tile_dimensions_in_pixels);
 
     outColor = texture(spritesheet, spritesheet_uv);
+}
+
+void test_main() {
+    ivec2 pixelCoord = ivec2((fragCoord + vec2(1.0)) * 0.5 * vec2(target_dimensions_in_pixels));
+
+    float color = 0;
+    if (pixelCoord.x % tile_dimensions_in_pixels.x == 0) {
+        color = 1;
+    }
+    if (pixelCoord.y % tile_dimensions_in_pixels.y == 0) {
+        color = 1;
+    }
+
+    outColor = vec4(color, color, color, 1.0);
+    return;
+}
+
+void main() {
+    real_main();
 }

@@ -157,5 +157,5 @@ def get_shader(kind, name):
 
 
 def cleanup_shaders():
-    for shader in _shaders:
+    for _, shader in _shaders.items():
         shader.cleanup()

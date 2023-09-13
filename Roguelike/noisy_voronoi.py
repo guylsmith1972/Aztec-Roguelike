@@ -41,10 +41,6 @@ def noisy_voronoi(noise_texture_data, seeds, width, height, reference_point):
 
     numpy_data = output_texture.to_numpy()
     result = numpy_data['red']
-
-    noise_texture.cleanup()
-    output_texture.cleanup()
-    shader.cleanup()
     
     print(f'result shape is {result.shape}')
 
