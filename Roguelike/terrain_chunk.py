@@ -26,7 +26,9 @@ class TerrainChunk:
                                        min_filter='nearest', mag_filter='nearest', wrap_s='clamp', wrap_t='clamp')
 
     def cleanup(self):
-        self.terrain_texture.cleanup()
+        if self.terrain_texture is not None:
+            self.terrain_texture.cleanup()
+            self.terrain_texture = None
 
     @classmethod
     def get_or_create(cls, world_x, world_y, size, world):
@@ -135,3 +137,9 @@ class TerrainChunk:
 
     def get_features(self):
         return self.features
+
+    @staticmethod
+    def cleanup_cache():
+        for _, chunk in TerrainChunk._terrain_chunk_cache.items():
+            chunk.cleanup()
+   

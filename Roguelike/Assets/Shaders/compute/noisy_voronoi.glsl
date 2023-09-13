@@ -5,7 +5,7 @@ uniform sampler2D noise_texture;
 uniform vec4 seeds[100]; // Array of seeds (max 100 seeds), where seeds[i].xy is position, seeds[i].z is weight, and seeds[i].w is noisiness
 uniform int seed_count; // Actual number of seeds
 uniform float noise_size;
-uniform float noise_ratio;
+uniform float noise_multiplier;
 uniform ivec2 corner_coord;
 
 layout(local_size_x = 16, local_size_y = 16) in;
@@ -17,7 +17,7 @@ float distance_to_seed(vec2 frag_coord, vec2 seed_pos, float weight) {
     vec2 diff = frag_coord - seed_pos;
     vec2 scaled_diff = diff / noise_size;  // Scale the difference using the noise texture size
     float noise_value = texture(noise_texture, scaled_diff).r; 
-    return sqrt(dot(diff, diff)) * (weight * (1.0 - noise_ratio) + noise_value * noise_ratio);
+    return sqrt(dot(diff, diff)) * (weight + noise_value * noise_multiplier);
 }
 
 void real_main() {

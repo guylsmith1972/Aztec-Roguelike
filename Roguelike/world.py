@@ -21,10 +21,7 @@ class World:
         self.terrain_chunks = self.get_relevant_terrain_chunks(screen)
 
     def cleanup(self):
-        for chunk in self.terrain_chunks:
-            chunk.cleanup()
-        for name, spritesheet in self.spritesheets.items():
-            spritesheet.cleanup()
+        TerrainChunk.cleanup_cache()            
 
     def define_world(self):
         rng_seed_noise = configuration.get('world.generator.random.seed.noise', 45)

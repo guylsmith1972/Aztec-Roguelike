@@ -1,7 +1,7 @@
 {
   "debug": {
     "rendering": {
-      "show_chunk_lines": true,
+      "show_chunk_lines": false,
       "show_grid_lines": false
     }
   },
@@ -54,16 +54,16 @@
         1
       ]
     },
-    "moves_per_second": 50
+    "moves_per_second": 600
   },
   "spritesheets": {
     "avatars": "Avatars",
     "terrain": "Terrain"
   },
   "terrain": {
-    "chunk_size": 256,
+    "chunk_size": 1024,
     "max_invalid_chunks": 100,
-    "tile_size": 8
+    "tile_size": 1
   },
   "world": {
     "generator": {
@@ -71,11 +71,11 @@
         "weights": [
           [
             "dirt",
-            3
+            4
           ],
           [
             "granite",
-            3
+            5
           ],
           [
             "grass",
@@ -83,15 +83,15 @@
           ],
           [
             "grass-thick",
-            2
+            1
           ],
           [
             "stones-small",
-            3
+            5
           ],
           [
             "stones-medium",
-            3
+            5
           ]
         ]
       },
@@ -106,8 +106,8 @@
       "region": {
         "seed_count": 4,
         "size": {
-          "height": 256,
-          "width": 256
+          "height": 1024,
+          "width": 1024
         }
       }
     }

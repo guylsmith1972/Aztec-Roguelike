@@ -15,7 +15,7 @@ def get_assets(tile_size):
     return new_spritesheets
 
 def main():
-    tile_sizes = [8, 10, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128]
+    tile_sizes = [1, 2, 4, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128]
     # Initialize pygame
     pygame.init()
     pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 4)
@@ -26,7 +26,7 @@ def main():
     spritesheets = get_assets(current_tile_size)
 
     game_player = player.Player(0, 0)
-    game_world = world.World(screen, game_player.get_position(), configuration.get('terrain.chunk_size', 256), spritesheets)
+    game_world = world.World(screen, game_player.get_position(), configuration.get('terrain.chunk_size', 1024), spritesheets)
     game_player.world = game_world
     
     pygame.display.set_caption('Roguelike World')
@@ -35,7 +35,7 @@ def main():
 
     current_movement = None  # Variable to store the current movement direction
     last_move_time = 0       # Variable to store the time of the last movement
-    move_rate_limit = 1.0 / configuration.get('movement.moves_per_second', 20)    # Rate limit for movement 
+    move_rate_limit = 1.0 / configuration.get('movement.moves_per_second', 60)    # Rate limit for movement 
 
     running = True
     while running:
@@ -100,6 +100,8 @@ def main():
 
     game_world.cleanup()
     gpu_shader.cleanup_shaders()
+    for _, spritesheet in spritesheets.items():
+        spritesheet.cleanup()
 
     pygame.quit()
 

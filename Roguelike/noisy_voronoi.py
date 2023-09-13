@@ -6,7 +6,7 @@ import numpy as np
 
 max_seeds = 100
 
-def noisy_voronoi(noise_texture_data, seeds, x, y, width, height, noise_ratio=0.5):
+def noisy_voronoi(noise_texture_data, seeds, x, y, width, height, noise_multiplier=1):
     assert noise_texture_data.shape[0] == noise_texture_data.shape[1]
     
     shader = get_shader(COMPUTE, 'noisy_voronoi')
@@ -22,7 +22,7 @@ def noisy_voronoi(noise_texture_data, seeds, x, y, width, height, noise_ratio=0.
         shader.set_uniform('seeds', '1fv', len(flat_seeds), flat_seeds)
         shader.set_uniform('seed_count', '1i', len(seeds))
         shader.set_uniform('noise_size', '1f', noise_texture_data.shape[0])
-        shader.set_uniform('noise_ratio', '1f', noise_ratio)        
+        shader.set_uniform('noise_multiplier', '1f', noise_multiplier)        
         shader.set_uniform('corner_coord', '2i', x, y)
 
     shader.compute(num_workgroups_x, num_workgroups_y, pre_invoke_function=pre_invoke, iterations=1)

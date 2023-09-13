@@ -7,16 +7,16 @@ import configuration
 
 def generate_seeds(spritesheet, x, y):
     region_definitions = configuration.get('world.generator.cells.weights', [
-        ('dirt', 3),
-        ('granite', 3),
+        ('dirt', 4),
+        ('granite', 5),
         ('grass', 1),
-        ('grass-thick', 2),
-        ('stones-small', 3),
-        ('stones-medium', 3)
+        ('grass-thick', 1),
+        ('stones-small', 5),
+        ('stones-medium', 5)
     ])
 
-    region_width = configuration.get('world.generator.region.size.width', 256)
-    region_height = configuration.get('world.generator.region.size.height', 256)
+    region_width = configuration.get('world.generator.region.size.width', 1024)
+    region_height = configuration.get('world.generator.region.size.height', 1024)
     seeds_per_region = configuration.get('world.generator.region.seed_count', 4)
     rng_seed_a = configuration.get('world.generator.random.seed.a', 42)
     rng_seed_b = configuration.get('world.generator.random.seed.b', 43)
@@ -46,4 +46,4 @@ def generate_seeds(spritesheet, x, y):
 
 
 def fill_chunk(seeds, x, y, size, noise):
-    return noisy_voronoi(noise, seeds, x, y, size, size, noise_ratio=0.75)
+    return noisy_voronoi(noise, seeds, x, y, size, size, noise_multiplier=2)
