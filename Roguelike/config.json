@@ -55,7 +55,7 @@
     "terrain": "Terrain"
   },
   "terrain": {
-    "chunk_size": 64,
+    "chunk_size": 256,
     "max_invalid_chunks": 100,
     "tile_size": 8
   },

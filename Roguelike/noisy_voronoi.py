@@ -25,10 +25,7 @@ def noisy_voronoi(noise_texture_data, seeds, x, y, width, height):
         shader.set_uniform('noise_size', '1f', noise_texture_data.shape[0])
         shader.set_uniform('corner_coord', '2i', x, y)
 
-    def post_invoke():
-        pass
-
-    shader.compute(num_workgroups_x, num_workgroups_y, pre_invoke_function=pre_invoke, post_invoke_function=post_invoke, iterations=1)
+    shader.compute(num_workgroups_x, num_workgroups_y, pre_invoke_function=pre_invoke, iterations=1)
 
     numpy_data = output_texture.to_numpy()
     result = numpy_data['red']

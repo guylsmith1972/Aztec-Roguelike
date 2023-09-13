@@ -24,7 +24,7 @@ void real_main() {
     int seed_index = -1; // Index of the closest seed
     
     for (int i = 0; i < seed_count; ++i) {
-        float distance = distance_to_seed(gl_GlobalInvocationID.xy + corner_coord, seeds[i].xy, seeds[i].z);
+        float distance = distance_to_seed(vec2(ivec2(gl_GlobalInvocationID.xy) + corner_coord), seeds[i].xy, seeds[i].z);
         if (distance < min_distance) {
             min_distance = distance;
             seed_index = i;
