@@ -90,6 +90,8 @@ class TerrainChunk:
         spritesheet_dimensions = terrain_spritesheet.get_dimensions_in_tiles()
         shader.set_uniform('spritesheet_dimensions_in_tiles', '2i', *spritesheet_dimensions)
         shader.set_uniform('tile_dimensions_in_pixels', '2i', tile_width, tile_height)
+        shader.set_uniform('show_grid_lines', '1i', 1 if configuration.get('debug.rendering.show_grid_lines', False) else 0)
+        shader.set_uniform('show_chunk_lines', '1i', 1 if configuration.get('debug.rendering.show_chunk_lines', False) else 0)
     
         # Render the shader to the pygame screen at display, screen_y
         screen_x = int((self.world_x - center_x) * tile_width + (display.get_width() - tile_width) / 2)

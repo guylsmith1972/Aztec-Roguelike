@@ -53,12 +53,15 @@ def main():
                 pygame.K_KP2: [0, -1],
                 pygame.K_KP3: [1, -1]
             })
+            key_to_movement = {int(key): value for key, value in key_to_movement.items()}
+            
+            print(key_to_movement)
         
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     running = False
-                elif str(event.key) in key_to_movement:
-                    direction = key_to_movement[str(event.key)]
+                elif event.key in key_to_movement:
+                    direction = key_to_movement[event.key]
                     if direction not in movement_stack:
                         movement_stack.append(direction)
                     current_movement = movement_stack[-1]
@@ -77,8 +80,8 @@ def main():
 
             if event.type == pygame.KEYUP:
                 # If the key released is a movement key, remove its corresponding movement from the stack
-                if str(event.key) in key_to_movement:
-                    movement = key_to_movement[str(event.key)]
+                if event.key in key_to_movement:
+                    movement = key_to_movement[event.key]
                     if movement in movement_stack:
                         movement_stack.remove(movement)
                     current_movement = movement_stack[-1] if movement_stack else None

@@ -1,4 +1,10 @@
 {
+  "debug": {
+    "rendering": {
+      "show_chunk_lines": true,
+      "show_grid_lines": false
+    }
+  },
   "files": {
     "shaders": {
       "noisy_voronoi": {
