@@ -1,3 +1,4 @@
+from OpenGL.converters import Output
 from gpu_shader import get_shader, COMPUTE
 from gpu_texture import Texture
 import gpu
@@ -5,16 +6,14 @@ import numpy as np
 
 max_seeds = 100
 
-def noisy_voronoi(noise_texture_data, seeds, x, y, width, height):
+def noisy_voronoi(noise_texture_data, seeds, x, y, width, height, noise_ratio=0.5):
     assert noise_texture_data.shape[0] == noise_texture_data.shape[1]
     
     shader = get_shader(COMPUTE, 'noisy_voronoi')
-
     flat_seeds = np.array(seeds, dtype=np.float32).flatten()
-
     num_workgroups_x, num_workgroups_y = shader.get_workgroup_count(width, height)
 
-    noise_texture = Texture({'type': 'numpy', 'data_format': 'R', 'data': {'red': noise_texture_data}}, min_filter='linear', mag_filter='linear')
+    noise_texture = Texture({'type': 'numpy', 'data_format': 'R', 'data': {'red': noise_texture_data}}, min_filter='linear', mag_filter='linear', wrap_s='repeat', wrap_t='repeat')
     output_texture = Texture({'type': 'empty', 'data_format': 'R', 'width': width, 'height': height})
 
     def pre_invoke():
@@ -23,11 +22,15 @@ def noisy_voronoi(noise_texture_data, seeds, x, y, width, height):
         shader.set_uniform('seeds', '1fv', len(flat_seeds), flat_seeds)
         shader.set_uniform('seed_count', '1i', len(seeds))
         shader.set_uniform('noise_size', '1f', noise_texture_data.shape[0])
+        shader.set_uniform('noise_ratio', '1f', noise_ratio)        
         shader.set_uniform('corner_coord', '2i', x, y)
 
     shader.compute(num_workgroups_x, num_workgroups_y, pre_invoke_function=pre_invoke, iterations=1)
 
     numpy_data = output_texture.to_numpy()
     result = numpy_data['red']
+    
+    noise_texture.cleanup()
+    output_texture.cleanup()
 
     return result, seeds

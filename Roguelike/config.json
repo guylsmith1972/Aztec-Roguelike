@@ -54,7 +54,7 @@
         1
       ]
     },
-    "moves_per_second": 20
+    "moves_per_second": 50
   },
   "spritesheets": {
     "avatars": "Avatars",
@@ -68,7 +68,6 @@
   "world": {
     "generator": {
       "cells": {
-        "count": 100,
         "weights": [
           [
             "dirt",
@@ -76,37 +75,40 @@
           ],
           [
             "granite",
-            9
+            3
           ],
           [
             "grass",
-            2
-          ],
-          [
-            "grass-thick",
             1
           ],
           [
+            "grass-thick",
+            2
+          ],
+          [
             "stones-small",
-            6
+            3
           ],
           [
             "stones-medium",
-            12
+            3
           ]
         ]
       },
       "random": {
         "seed": {
-          "chooser": 44,
-          "noise": 45,
-          "x": 42,
-          "y": 43
+          "a": 42,
+          "b": 43,
+          "c": 44,
+          "noise": 45
         }
       },
-      "size": {
-        "height": 1000,
-        "width": 1000
+      "region": {
+        "seed_count": 4,
+        "size": {
+          "height": 256,
+          "width": 256
+        }
       }
     }
   }

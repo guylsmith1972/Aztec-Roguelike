@@ -26,7 +26,7 @@ def main():
     spritesheets = get_assets(current_tile_size)
 
     game_player = player.Player(0, 0)
-    game_world = world.World(screen, game_player.get_position(), configuration.get('terrain.chunk_size', 64), spritesheets)
+    game_world = world.World(screen, game_player.get_position(), configuration.get('terrain.chunk_size', 256), spritesheets)
     game_player.world = game_world
     
     pygame.display.set_caption('Roguelike World')
@@ -55,8 +55,6 @@ def main():
             })
             key_to_movement = {int(key): value for key, value in key_to_movement.items()}
             
-            print(key_to_movement)
-        
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     running = False

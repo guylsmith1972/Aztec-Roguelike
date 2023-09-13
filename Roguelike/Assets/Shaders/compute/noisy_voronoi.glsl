@@ -2,9 +2,10 @@
 
 // Input
 uniform sampler2D noise_texture; 
-uniform vec4 seeds[100]; // Array of seeds (assuming max 100 seeds), where seeds[i].xy is position, seeds[i].z is weight, and seeds[i].w is noisiness
+uniform vec4 seeds[100]; // Array of seeds (max 100 seeds), where seeds[i].xy is position, seeds[i].z is weight, and seeds[i].w is noisiness
 uniform int seed_count; // Actual number of seeds
 uniform float noise_size;
+uniform float noise_ratio;
 uniform ivec2 corner_coord;
 
 layout(local_size_x = 16, local_size_y = 16) in;
@@ -16,15 +17,16 @@ float distance_to_seed(vec2 frag_coord, vec2 seed_pos, float weight) {
     vec2 diff = frag_coord - seed_pos;
     vec2 scaled_diff = diff / noise_size;  // Scale the difference using the noise texture size
     float noise_value = texture(noise_texture, scaled_diff).r; 
-    return sqrt(dot(diff, diff)) * weight * noise_value;
+    return sqrt(dot(diff, diff)) * (weight * (1.0 - noise_ratio) + noise_value * noise_ratio);
 }
 
 void real_main() {
-   float min_distance = 1e9; // Arbitrarily large number
+    float min_distance = 1e9; // Arbitrarily large number
     int seed_index = -1; // Index of the closest seed
+    vec2 frag_coord = vec2(gl_GlobalInvocationID.xy) + vec2(corner_coord);
     
     for (int i = 0; i < seed_count; ++i) {
-        float distance = distance_to_seed(vec2(ivec2(gl_GlobalInvocationID.xy) + corner_coord), seeds[i].xy, seeds[i].z);
+        float distance = distance_to_seed(frag_coord, seeds[i].xy, seeds[i].z);
         if (distance < min_distance) {
             min_distance = distance;
             seed_index = i;

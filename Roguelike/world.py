@@ -3,8 +3,6 @@ from terrain_chunk import TerrainChunk
 from terrain_generator import generate_seeds, fill_chunk
 import configuration
 import math
-import pygame
-import random
 import terrain
 
 
@@ -29,28 +27,13 @@ class World:
             spritesheet.cleanup()
 
     def define_world(self):
-        terrain_spritesheet = self.get_spritesheets()['terrain']
-        region_definitions = configuration.get('world.generator.cells.weights', [
-            ('dirt', 0.3),
-            ('granite', 9),
-            ('grass', 9),
-            ('grass-thick', 2),
-            ('stones-small', 2),
-            ('stones-medium', 2)
-        ])
-        world_width = configuration.get('world.generator.size.width', 1000)
-        world_height = configuration.get('world.generator.size.height', 1000)
-        cell_count = configuration.get('world.generator.cells.count', 100)
-        rng_seed_x = configuration.get('world.generator.random.seed.x', 42)
-        rng_seed_y = configuration.get('world.generator.random.seed.y', 43)
-        rng_seed_chooser = configuration.get('world.generator.random.seed.chooser', 44)
-        self.voronoi_seeds = generate_seeds(terrain_spritesheet, region_definitions, world_width, world_height, cell_count, rng_seed_x, rng_seed_y, rng_seed_chooser)
-
         rng_seed_noise = configuration.get('world.generator.random.seed.noise', 45)
         self.noise = generate_noise(1024, 5, 1, rng_seed_noise)
         
     def get_chunk_values(self, x, y, size):
-        coverage, _ = fill_chunk(self.voronoi_seeds, x, y, size, self.noise)
+        terrain_spritesheet = self.get_spritesheets()['terrain']
+        seeds = generate_seeds(terrain_spritesheet, x, y)
+        coverage, _ = fill_chunk(seeds, x, y, size, self.noise)
         return coverage
         
     def set_spritesheets(self, spritesheets):
@@ -97,8 +80,7 @@ class World:
         terrain_spritesheet = self.spritesheets['terrain']
 
         # add a randomly-placed wall
-        terrain_chunk.set_terrain_at(math.floor(random.random() * terrain_chunk.size), math.floor(random.random() * terrain_chunk.size), terrain_spritesheet.get_index('wall'))
-
+        # terrain_chunk.set_terrain_at(math.floor(random.random() * terrain_chunk.size), math.floor(random.random() * terrain_chunk.size), terrain_spritesheet.get_index('wall'))
 
     def render(self, display, center_x, center_y):
         # Render terrain_chunks
