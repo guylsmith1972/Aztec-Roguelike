@@ -15,7 +15,7 @@ def get_assets(tile_size):
     return new_spritesheets
 
 def main():
-    tile_sizes = [1, 2, 4, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128]
+    tile_sizes = [1, 2, 4, 6, 8, 10, 12, 16, 20, 24, 32]
     # Initialize pygame
     pygame.init()
     pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 4)
@@ -35,7 +35,7 @@ def main():
 
     current_movement = None  # Variable to store the current movement direction
     last_move_time = 0       # Variable to store the time of the last movement
-    move_rate_limit = 1.0 / configuration.get('movement.moves_per_second', 60)    # Rate limit for movement 
+    move_rate_limit = 1.0 / configuration.get('movement.moves_per_second', 100)    # Rate limit for movement 
 
     running = True
     while running:

@@ -54,7 +54,7 @@
         1
       ]
     },
-    "moves_per_second": 600
+    "moves_per_second": 20
   },
   "spritesheets": {
     "avatars": "Avatars",

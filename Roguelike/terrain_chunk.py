@@ -43,6 +43,7 @@ class TerrainChunk:
             if len(cls._invalid_terrain_chunks_LRU) > configuration.get('terrain.max_invalid_chunks', 100):
                 # Remove the least-recently-used invalid terrain_chunk
                 oldest_invalid_key = cls._invalid_terrain_chunks_LRU.popleft()
+                cls._terrain_chunk_cache[oldest_invalid_key].cleanup()
                 del cls._terrain_chunk_cache[oldest_invalid_key]
                 del cls._terrain_chunk_validity[oldest_invalid_key]
             
