@@ -38,19 +38,18 @@ class World:
             ('stones-small', 2),
             ('stones-medium', 2)
         ])
-        world_width = configuration.get('world.generator.size.width', 10000)
-        world_height = configuration.get('world.generator.size.height', 5000)
-        cell_count = configuration.get('world.generator.cells.count', 5000)
+        world_width = configuration.get('world.generator.size.width', 1000)
+        world_height = configuration.get('world.generator.size.height', 1000)
+        cell_count = configuration.get('world.generator.cells.count', 100)
         rng_seed_x = configuration.get('world.generator.random.seed.x', 42)
-        rng_seed_y = configuration.get('world.generator.random.seed.y', 42)
-        rng_seed_chooser = configuration.get('world.generator.random.seed.chooser', 42)
+        rng_seed_y = configuration.get('world.generator.random.seed.y', 43)
+        rng_seed_chooser = configuration.get('world.generator.random.seed.chooser', 44)
         self.voronoi_seeds = generate_seeds(terrain_spritesheet, region_definitions, world_width, world_height, cell_count, rng_seed_x, rng_seed_y, rng_seed_chooser)
 
-        rng_seed_noise = configuration.get('world.generator.random.seed.noise', 42)
+        rng_seed_noise = configuration.get('world.generator.random.seed.noise', 45)
         self.noise = generate_noise(1024, 5, 1, rng_seed_noise)
         
     def get_chunk_values(self, x, y, size):
-        print(f'getting chunk values at {x}, {y}: {size}')
         coverage, _ = fill_chunk(self.voronoi_seeds, x, y, size, self.noise)
         return coverage
         

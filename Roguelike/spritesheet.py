@@ -1,19 +1,18 @@
+from gpu_texture import Texture
+from PIL import Image
 import bidict
 import json
 import math
 import os
 import pygame
 
-from gpu_texture import Texture
-from PIL import Image
-
 
 class SpriteSheet:
     def __init__(self, directory, tile_width=32, tile_height=32):
-        self.directory = directory
+        self.directory = f'Assets/{directory}'
         self.tile_width = tile_width
         self.tile_height = tile_height
-        self.sheet_map = bidict.bidict(json.load(open(f'{directory}/spritemap.json', 'r')))
+        self.sheet_map = bidict.bidict(json.load(open(f'{self.directory}/spritemap.json', 'r')))
         self.sheet_path = self._find_or_create_sheet()
         self.sheet_image = pygame.image.load(self.sheet_path)
         pil_image = Image.frombytes("RGBA", self.sheet_image.get_size(), pygame.image.tostring(self.sheet_image, "RGBA"))

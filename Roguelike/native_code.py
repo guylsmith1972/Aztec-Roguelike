@@ -4,7 +4,7 @@ import ctypes
 import numpy as np
 
 # Load the DLL
-dll = ctypes.CDLL(f'./Assets/SharedObjects/{configuration.get("files.dll.aztec", "AztecClientBL.dll")}')
+dll = ctypes.CDLL(f'./Assets/SharedObjects/{configuration.get("files.shared_objects.aztec", "AztecClientBL.dll")}')
 
 # Define the constants and structures as per the provided definitions
 MAX_NEIGHBORS = 20

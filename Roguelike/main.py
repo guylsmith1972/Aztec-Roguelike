@@ -9,8 +9,8 @@ import world
 
 def get_assets(tile_size):
     new_spritesheets = {
-        'terrain': spritesheet.SpriteSheet(configuration.get('spritesheets.terrain', 'Assets/Terrain'), tile_size, tile_size),
-        'avatars': spritesheet.SpriteSheet(configuration.get('spritesheets.avatars', 'Assets/Avatars'), tile_size, tile_size)
+        'terrain': spritesheet.SpriteSheet(configuration.get('spritesheets.terrain', 'Terrain'), tile_size, tile_size),
+        'avatars': spritesheet.SpriteSheet(configuration.get('spritesheets.avatars', 'Avatars'), tile_size, tile_size)
     }
     return new_spritesheets
 

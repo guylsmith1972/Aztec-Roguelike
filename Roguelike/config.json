@@ -1,16 +1,16 @@
 {
   "files": {
-    "dll": {
-      "aztec": "AztecClientBL.dll"
-    },
     "shaders": {
       "noisy_voronoi": {
         "compute": "noisy_voronoi.glsl"
       },
       "tile_grid_renderer": {
-        "fragment": "tile_grid_renderer.glsl",
-        "vertex": "tile_grid_renderer.glsl"
+        "fragment": "tile_grid_renderer_fragment.glsl",
+        "vertex": "tile_grid_renderer_vertex.glsl"
       }
+    },
+    "shared_objects": {
+      "aztec": "AztecClientBL.dll"
     }
   },
   "movement": {
@@ -51,8 +51,8 @@
     "moves_per_second": 20
   },
   "spritesheets": {
-    "avatars": "Assets/Avatars",
-    "terrain": "Assets/Terrain"
+    "avatars": "Avatars",
+    "terrain": "Terrain"
   },
   "terrain": {
     "chunk_size": 64,
@@ -66,7 +66,7 @@
         "weights": [
           [
             "dirt",
-            0.3
+            3
           ],
           [
             "granite",
@@ -74,33 +74,33 @@
           ],
           [
             "grass",
-            9
+            2
           ],
           [
             "grass-thick",
-            2
+            1
           ],
           [
             "stones-small",
-            2
+            6
           ],
           [
             "stones-medium",
-            2
+            12
           ]
         ]
       },
       "random": {
         "seed": {
-          "chooser": 42,
-          "noise": 42,
+          "chooser": 44,
+          "noise": 45,
           "x": 42,
-          "y": 42
+          "y": 43
         }
       },
       "size": {
-        "height": 2000,
-        "width": 2000
+        "height": 1000,
+        "width": 1000
       }
     }
   }

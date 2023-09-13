@@ -5,20 +5,10 @@ import numpy as np
 
 max_seeds = 100
 
-def noisy_voronoi(noise_texture_data, seeds, width, height, reference_point):
+def noisy_voronoi(noise_texture_data, seeds, x, y, width, height):
     assert noise_texture_data.shape[0] == noise_texture_data.shape[1]
     
     shader = get_shader(COMPUTE, 'noisy_voronoi')
-
-    if len(seeds) > max_seeds:
-        def distance(point1, point2):
-            return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2) ** 0.5
-
-        sorted_seeds = sorted(seeds, key=lambda seed: distance(seed, reference_point))
-        seeds = sorted_seeds[0:max_seeds]
-
-    for i in range(len(seeds)):
-        seeds[i] = (seeds[i][0] - reference_point[0], seeds[i][1] - reference_point[1], seeds[i][2], seeds[i][3])
 
     flat_seeds = np.array(seeds, dtype=np.float32).flatten()
 
@@ -33,6 +23,7 @@ def noisy_voronoi(noise_texture_data, seeds, width, height, reference_point):
         shader.set_uniform('seeds', '1fv', len(flat_seeds), flat_seeds)
         shader.set_uniform('seed_count', '1i', len(seeds))
         shader.set_uniform('noise_size', '1f', noise_texture_data.shape[0])
+        shader.set_uniform('corner_coord', '2i', x, y)
 
     def post_invoke():
         pass
@@ -41,7 +32,5 @@ def noisy_voronoi(noise_texture_data, seeds, width, height, reference_point):
 
     numpy_data = output_texture.to_numpy()
     result = numpy_data['red']
-    
-    print(f'result shape is {result.shape}')
 
     return result, seeds

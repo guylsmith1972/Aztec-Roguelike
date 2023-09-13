@@ -27,11 +27,11 @@ def get_shader(kind, name):
                 self.compute_shader = compileShader(shader_source, GL_COMPUTE_SHADER)
                 self.shader_program = compileProgram(self.compute_shader)
             elif kind == RENDER:
-                vertex_filename = configuration.get(f'files.shaders.{name}.vertex', f'{name}.glsl')
-                fragment_filename = configuration.get(f'files.shaders.{name}.fragment', f'{name}.glsl')
-                with open(f'Assets/Shaders/vertex/{vertex_filename}', "r") as f:
+                vertex_filename = configuration.get(f'files.shaders.{name}.vertex', f'{name}_vertex.glsl')
+                fragment_filename = configuration.get(f'files.shaders.{name}.fragment', f'{name}_fragment.glsl')
+                with open(f'Assets/Shaders/render/{vertex_filename}', "r") as f:
                     vertex_shader_source = f.read()
-                with open(f'Assets/Shaders/fragment/{fragment_filename}', "r") as f:
+                with open(f'Assets/Shaders/render/{fragment_filename}', "r") as f:
                     fragment_shader_source = f.read()
                 self.vertex_shader = compileShader(vertex_shader_source, GL_VERTEX_SHADER)
                 self.fragment_shader = compileShader(fragment_shader_source, GL_FRAGMENT_SHADER)

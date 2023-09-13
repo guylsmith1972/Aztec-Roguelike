@@ -25,4 +25,4 @@ def generate_seeds(spritesheet, region_definitions, width, height, voronoi_cell_
 
 
 def fill_chunk(seeds, x, y, size, noise):
-    return noisy_voronoi(noise, seeds, size, size, (x + (size-1) * 0.5, y + (size-1) * 0.5))
+    return noisy_voronoi(noise, seeds, x, y, size, size)
