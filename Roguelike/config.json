@@ -1,7 +1,7 @@
 {
   "debug": {
     "rendering": {
-      "show_chunk_lines": false,
+      "show_chunk_lines": true,
       "show_grid_lines": false
     }
   },
@@ -54,16 +54,36 @@
         1
       ]
     },
-    "moves_per_second": 20
+    "moves_per_second": 1000
   },
   "spritesheets": {
     "avatars": "Avatars",
-    "terrain": "Terrain"
+    "terrain": "Terrain",
+    "vegetation": "Vegetation"
   },
   "terrain": {
-    "chunk_size": 1024,
+    "chunk_size": 128,
     "max_invalid_chunks": 100,
-    "tile_size": 1
+    "tile_size": 4
+  },
+  "ui": {
+    "map": {
+      "zoom": {
+        "levels": [
+          4,
+          6,
+          8,
+          10,
+          12,
+          16,
+          20,
+          24,
+          32,
+          48,
+          64
+        ]
+      }
+    }
   },
   "world": {
     "generator": {
@@ -105,6 +125,11 @@
       },
       "region": {
         "seed_count": 4,
+        "seeds": {
+          "cache": {
+            "capacity": 1000
+          }
+        },
         "size": {
           "height": 1024,
           "width": 1024

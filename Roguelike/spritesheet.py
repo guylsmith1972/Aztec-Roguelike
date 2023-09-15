@@ -12,11 +12,11 @@ class SpriteSheet:
         self.directory = f'Assets/{directory}'
         self.tile_width = tile_width
         self.tile_height = tile_height
-        self.sheet_map = bidict.bidict(json.load(open(f'{self.directory}/spritemap.json', 'r')))
         self.sheet_path = self._find_or_create_sheet()
         self.sheet_image = pygame.image.load(self.sheet_path)
         pil_image = Image.frombytes("RGBA", self.sheet_image.get_size(), pygame.image.tostring(self.sheet_image, "RGBA"))
         self.texture = Texture({"type": "image", "data": pil_image}, wrap_s='clamp', wrap_t='clamp')
+        self.sheet_map = bidict.bidict(json.load(open(f'{self.directory}/spritemap.json', 'r')))
 
     def cleanup(self):
         self.texture.cleanup()

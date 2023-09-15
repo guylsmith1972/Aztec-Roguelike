@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fe791785-016e-4373-ad73-cb7f79ace54a</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>biomes.py</StartupFile>
+    <StartupFile>main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,6 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="biomes.py" />
+    <Compile Include="lru_cache.py" />
     <Compile Include="Obsoleted\PythonProofOfConcept\colorization.py" />
     <Compile Include="configuration.py" />
     <Compile Include="Obsoleted\PythonProofOfConcept\ecosystems.py" />
@@ -40,6 +41,7 @@
     <Compile Include="noisy_voronoi.py" />
     <Compile Include="player.py" />
     <Compile Include="plotting.py" />
+    <Compile Include="roads.py" />
     <Compile Include="terrain_chunk.py" />
     <Compile Include="main.py" />
     <Compile Include="spritesheet.py" />
@@ -182,6 +184,8 @@
     <Content Include="Assets\Terrain\spritesheet_80_80.png" />
     <Content Include="Assets\Terrain\spritesheet_8_8.png" />
     <Content Include="Assets\Terrain\spritesheet_96_96.png" />
+    <Content Include="colors_per_line.json" />
+    <Content Include="color_map.json" />
     <Content Include="Obsoleted\BackBurner\Shaders\erosion_old.glsl" />
     <Content Include="Obsoleted\BackBurner\Shaders\erosion.glsl" />
     <Content Include="Assets\Shaders\compute\noisy_voronoi.glsl" />

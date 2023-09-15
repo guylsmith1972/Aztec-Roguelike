@@ -11,7 +11,7 @@ uniform ivec2 tile_dimensions_in_pixels;
 uniform int show_grid_lines;
 uniform int show_chunk_lines;
 
-void real_main() {
+void main() {
     // Convert fragCoord from [-1,1] to pixel coordinates [0, width), [0, height)
     ivec2 pixel_coord = ivec2((fragCoord + vec2(1.0)) * 0.5 * vec2(target_dimensions_in_pixels));
 
@@ -23,43 +23,29 @@ void real_main() {
     
     int tile_index = int(texture(tile_indices, index_uv).r);
 
-    ivec2 spritesheet_tile_coord = ivec2(tile_index % spritesheet_dimensions_in_tiles.x,
-                                            tile_index / spritesheet_dimensions_in_tiles.x);
+    if (tile_index >= 0) {
+        ivec2 spritesheet_tile_coord = ivec2(tile_index % spritesheet_dimensions_in_tiles.x,
+                                                tile_index / spritesheet_dimensions_in_tiles.x);
 
-    ivec2 spritesheet_corner_pixel_coord = spritesheet_tile_coord * tile_dimensions_in_pixels;
+        ivec2 spritesheet_corner_pixel_coord = spritesheet_tile_coord * tile_dimensions_in_pixels;
     
-    ivec2 pixel_offset = pixel_coord % tile_dimensions_in_pixels;
+        // Individual tiles are "upside down" in the spritesheet
+        ivec2 pixel_offset = ivec2(pixel_coord.x % tile_dimensions_in_pixels.x, tile_dimensions_in_pixels.y - 1 - (pixel_coord.y % tile_dimensions_in_pixels.y));
 
-    ivec2 spritesheet_pixel_coord = spritesheet_corner_pixel_coord + pixel_offset;
+        ivec2 spritesheet_pixel_coord = spritesheet_corner_pixel_coord + pixel_offset;
 
-    // Convert to UV coordinates for sampling
-    vec2 spritesheet_uv = (vec2(spritesheet_pixel_coord) + vec2(0.5)) / vec2(spritesheet_dimensions_in_tiles * tile_dimensions_in_pixels);
+        // Convert to UV coordinates for sampling
+        vec2 spritesheet_uv = (vec2(spritesheet_pixel_coord) + vec2(0.5)) / vec2(spritesheet_dimensions_in_tiles * tile_dimensions_in_pixels);
 
-    outColor = texture(spritesheet, spritesheet_uv);
+        outColor = texture(spritesheet, spritesheet_uv);
+    } else {
+        outColor = vec4(0.0);
+    }
 
-    if (show_grid_lines == 1 && (pixel_coord.x % tile_dimensions_in_pixels.x == 0 || pixel_coord.y % tile_dimensions_in_pixels.y == 0)) {
-        outColor = vec4(0.5);
+    if (show_grid_lines == 1 && tile_dimensions_in_pixels.x >= 8 && (pixel_coord.x % tile_dimensions_in_pixels.x == 0 || pixel_coord.y % tile_dimensions_in_pixels.y == 0)) {
+        outColor = vec4(0.5, 0.5, 0.5, 1);
     }
     if (show_chunk_lines == 1 && (pixel_coord.x == 0 || pixel_coord.y == 0)) {
         outColor = vec4(1.0);
     }
-}
-
-void test_main() {
-    ivec2 pixelCoord = ivec2((fragCoord + vec2(1.0)) * 0.5 * vec2(target_dimensions_in_pixels));
-
-    float color = 0;
-    if (pixelCoord.x % tile_dimensions_in_pixels.x == 0) {
-        color = 1;
-    }
-    if (pixelCoord.y % tile_dimensions_in_pixels.y == 0) {
-        color = 1;
-    }
-
-    outColor = vec4(color, color, color, 1.0);
-    return;
-}
-
-void main() {
-    real_main();
 }

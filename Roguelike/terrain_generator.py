@@ -1,11 +1,18 @@
-from Obsoleted.PythonProofOfConcept.ecosystems import Region
 from noisy_voronoi import noisy_voronoi
 from lcg import LCG
+from lru_cache import LRUCache
 
 import configuration
 
 
+_seed_cache = LRUCache(capacity = configuration.get('world.generator.region.seeds.cache.capacity', 1000))
+
 def generate_seeds(spritesheet, x, y):
+    global _seed_cache
+    cached_result = _seed_cache.get((x, y))
+    if cached_result:
+        return cached_result
+
     region_definitions = configuration.get('world.generator.cells.weights', [
         ('dirt', 4),
         ('granite', 5),
@@ -14,6 +21,8 @@ def generate_seeds(spritesheet, x, y):
         ('stones-small', 5),
         ('stones-medium', 5)
     ])
+    
+    remapped_regions = [spritesheet.get_index(region_definitions[choice][0]) for choice in range(len(region_definitions))]
 
     region_width = configuration.get('world.generator.region.size.width', 1024)
     region_height = configuration.get('world.generator.region.size.height', 1024)
@@ -40,8 +49,9 @@ def generate_seeds(spritesheet, x, y):
                 a = lcg.random_range(xx, xx + region_width)
                 b = lcg.random_range(yy, yy + region_height)
                 c = region_definitions[choice][1]
-                d = spritesheet.get_index(region_definitions[choice][0])
+                d = remapped_regions[choice]
                 seeds.append((a, b, c, d))
+    _seed_cache.put((x, y), seeds)
     return seeds
 
 

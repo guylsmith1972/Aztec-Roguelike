@@ -26,3 +26,12 @@ def initialize_opengl_context(width=800, height=600):
     print("OpenGL version:", glGetString(GL_VERSION).decode('utf-8'))
     
     return display
+
+
+def start_blending():
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+def stop_blending():
+    glDisable(GL_BLEND);

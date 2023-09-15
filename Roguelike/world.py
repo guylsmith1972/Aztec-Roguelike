@@ -7,13 +7,14 @@ import terrain
 
 
 class World:
-    def __init__(self, screen, player_position, terrain_chunk_size, spritesheets):
+    def __init__(self, screen, player_position, terrain_chunk_size, spritesheets, render_order):
         self.voronoi_seeds = None
         self.noise = None
         self.terrain_types = terrain.Terrain(spritesheets['terrain'])
         self.player_position = player_position
         self.creatures = []  # List of creatures in the world
         self.spritesheets = spritesheets
+        self.render_order = render_order
         self.terrain_chunk_size = terrain_chunk_size
         self.terrain_chunks = set()  # We need to create an empty set first because calling self.get_relevant_terrain_chunks() needs this to be defined as a set instead of as None
 
@@ -73,22 +74,10 @@ class World:
         self.player_position = new_player_position
         self.terrain_chunks = self.get_relevant_terrain_chunks(screen)
         
-    def modify_chunk(self, terrain_chunk):
-        terrain_spritesheet = self.spritesheets['terrain']
-
-        # add a randomly-placed wall
-        # terrain_chunk.set_terrain_at(math.floor(random.random() * terrain_chunk.size), math.floor(random.random() * terrain_chunk.size), terrain_spritesheet.get_index('wall'))
-
     def render(self, display, center_x, center_y):
         # Render terrain_chunks
         for terrain_chunk in self.terrain_chunks:
             terrain_chunk.render(display, center_x, center_y)
-
-        # TODO: Render items
-        # TODO: Render creatures
-            
-        # Render player:
-        # self.spritesheets['avatars'].render(display, 0, self.player_position[0], self.player_position[1], self.player_position[0], self.player_position[1])
         
     def is_passable_at(self, world_x, world_y):
         for terrain_chunk in self.terrain_chunks:

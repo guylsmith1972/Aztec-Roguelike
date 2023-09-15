@@ -1,13 +1,16 @@
+from collections import Counter
 from collections import defaultdict
-import json
+import random
 from native_code import generate_noise
 from PIL import Image
 from scipy.spatial import Voronoi, voronoi_plot_2d
 from scipy.stats import gamma, norm
+from sklearn.cluster import KMeans
+import json
 import math
 import matplotlib.pyplot as plt
 import numpy as np
-import random
+
 
 
 def average_temperature(latitude):
@@ -264,7 +267,7 @@ def count_colors_per_line(image):
         
         results[y] = dict(color_counts)
     
-    return results
+    return results, index_map
 
 
 def count_colors_per_line_from_file(filename):
@@ -286,11 +289,121 @@ def count_colors_per_line_from_file(filename):
     return count_colors_per_line(image)
 
 
+
+def remap_indices(color_map):
+    def closest_color_index(color):
+        """Find the index of the closest color in the color map."""
+        min_distance = float('inf')
+        closest_index = None
+
+        for index, original_color in color_map.items():
+            distance = np.linalg.norm(np.array(original_color[:3]) - np.array(color))
+            if distance < min_distance:
+                min_distance = distance
+                closest_index = index
+
+        return closest_index
+
+    colors = [value[:3] for value in color_map.values()]
+
+    # Reapply K-Means clustering
+    kmeans = KMeans(n_clusters=16, random_state=0)
+    kmeans.fit(colors)
+
+    # Re-find the representative colors (cluster centroids)
+    representative_colors = kmeans.cluster_centers_
+
+    # Map representative colors to their closest original indices
+    mapped_indices = {closest_color_index(color, color_map): color.astype(int).tolist() for color in representative_colors}
+
+    mapped_indices
+
+
 def main():
-    colors_per_line = count_colors_per_line_from_file('Assets/References/biome_map.png')
-    print(colors_per_line)
-    with open('colors_per_line.json', 'w') as outfile:
-        json.dump(colors_per_line, outfile, indent=2)        
+    def apply_noise(reference, noise):
+        # Extract the dimensions of the reference image and noise array
+        ref_width, ref_height = reference.size
+        noise_height, noise_width = noise.shape
+    
+        # Create an empty PIL image to store the result
+        output = Image.new('RGB', (ref_width, ref_height))
+    
+        # For each pixel in the output image
+        for y in range(ref_height):
+            for x in range(ref_width):
+                # Calculate the new position in the reference image
+                new_x = int(noise[y % noise_height][x % noise_width] * (ref_width - 1))
+                new_pixel = reference.getpixel((new_x, y))
+                # Set the pixel value in the output image
+                output.putpixel((x, y), new_pixel)
+    
+        return output
+    
+    img = Image.open('Assets/References/biome_map_revised.png')
+    print(img.size)
+    noise = generate_noise(4096, 1, 1, seed=random.randint(0, 1000000000))
+    foo = apply_noise(img, noise)
+    foo.save('Assets/References/random_world.png')
+
+
+    # # Load the image
+    # img = Image.open('Assets/References/biome_map_revised.png')
+
+    # # Convert the image to RGB (just in case it's in another format like RGBA)
+    # img_rgb = img.convert('RGB')
+
+    # # Convert the image data to an array
+    # data = np.array(img_rgb)
+
+    # # Extract all unique colors from the image
+    # unique_colors = np.unique(data.reshape(-1, 3), axis=0)
+    
+    # print(len(unique_colors))
+
+    # # Flatten the image data for counting
+    # flattened_data = data.reshape(-1, 3)
+
+    # # Count the occurrences of each color
+    # color_counts = Counter(map(tuple, flattened_data))
+
+    # # Find the 16 most common colors
+    # most_common_colors = np.array([color for color, count in color_counts.most_common(16)])
+    
+    # print(most_common_colors)
+
+    # def find_nearest_color(color, palette):
+    #     """Find the nearest color in the palette using Euclidean distance."""
+    #     distances = np.sum((palette - color) ** 2, axis=1)
+    #     return palette[np.argmin(distances)]
+
+    # # Create an output array of the same shape as the input data
+    # output_data = np.zeros_like(data)
+
+    # # Replace each pixel's color with the nearest color from the 16 most common colors
+    # for i in range(data.shape[0]):
+    #     for j in range(data.shape[1]):
+    #         output_data[i, j] = find_nearest_color(data[i, j], most_common_colors)
+
+    # # Convert the output data to an image
+    # output_img = Image.fromarray(output_data.astype('uint8'))
+    # output_img.save('Assets/References/biome_map_revised.png')
+
+    # # Display the original and modified images side by side
+    # original_img = img.resize((img.width // 2, img.height // 2))
+    # modified_img = output_img.resize((output_img.width // 2, output_img.height // 2))
+    # combined_img = Image.new('RGB', (original_img.width + modified_img.width, original_img.height))
+    # combined_img.paste(original_img, (0, 0))
+    # combined_img.paste(modified_img, (original_img.width, 0))
+    
+    # colors_per_line, color_map = count_colors_per_line_from_file('Assets/References/biome_map_revised.png')
+    # print(color_map)
+    # with open('colors_per_line.json', 'w') as outfile:
+    #     json.dump(colors_per_line, outfile, indent=2)        
+    # with open('color_map.json', 'w') as outfile:
+    #     json.dump({v:k for k, v in color_map.items()}, outfile, indent=2)
+        
+    # remapped = remap_indices(color_map)
+    # print(json.dumps(remapped, indent=2))
 
     # latitude = 90
     # while latitude >= 0:

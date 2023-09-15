@@ -10,12 +10,13 @@ import world
 def get_assets(tile_size):
     new_spritesheets = {
         'terrain': spritesheet.SpriteSheet(configuration.get('spritesheets.terrain', 'Terrain'), tile_size, tile_size),
+        'vegetation': spritesheet.SpriteSheet(configuration.get('spritesheets.vegetation', 'Vegetation'), tile_size, tile_size),
         'avatars': spritesheet.SpriteSheet(configuration.get('spritesheets.avatars', 'Avatars'), tile_size, tile_size)
     }
     return new_spritesheets
 
 def main():
-    tile_sizes = [1, 2, 4, 6, 8, 10, 12, 16, 20, 24, 32]
+    tile_sizes = configuration.get('ui.map.zoom.levels', [4, 6, 8, 10, 12, 16, 20, 24, 32, 48, 64])
     # Initialize pygame
     pygame.init()
     pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 4)
@@ -26,7 +27,7 @@ def main():
     spritesheets = get_assets(current_tile_size)
 
     game_player = player.Player(0, 0)
-    game_world = world.World(screen, game_player.get_position(), configuration.get('terrain.chunk_size', 1024), spritesheets)
+    game_world = world.World(screen, game_player.get_position(), configuration.get('terrain.chunk_size', 1024), spritesheets, ['terrain', 'vegetation', 'avatars'])
     game_player.world = game_world
     
     pygame.display.set_caption('Roguelike World')
