@@ -1,3 +1,4 @@
+from constants import *
 from native_code import generate_noise
 from terrain_chunk import TerrainChunk
 from terrain_generator import generate_seeds, fill_chunk
@@ -10,9 +11,8 @@ class World:
     def __init__(self, screen, player_position, terrain_chunk_size, spritesheets, render_order):
         self.voronoi_seeds = None
         self.noise = None
-        self.terrain_types = terrain.Terrain(spritesheets['terrain'])
+        self.terrain_types = terrain.Terrain(spritesheets[TYPE_TERRAIN])
         self.player_position = player_position
-        self.creatures = []  # List of creatures in the world
         self.spritesheets = spritesheets
         self.render_order = render_order
         self.terrain_chunk_size = terrain_chunk_size
@@ -29,14 +29,14 @@ class World:
         self.noise = generate_noise(1024, 5, 1, rng_seed_noise)
         
     def get_chunk_values(self, x, y, size):
-        terrain_spritesheet = self.get_spritesheets()['terrain']
+        terrain_spritesheet = self.get_spritesheets()[TYPE_TERRAIN]
         seeds = generate_seeds(terrain_spritesheet, x, y)
         coverage, _ = fill_chunk(seeds, x, y, size, self.noise)
         return coverage
         
     def set_spritesheets(self, spritesheets):
         self.spritesheets = spritesheets
-        self.terrain_types = terrain.Terrain(spritesheets['terrain'])
+        self.terrain_types = terrain.Terrain(spritesheets[TYPE_TERRAIN])
             
     def get_spritesheets(self):
         return self.spritesheets
@@ -45,8 +45,8 @@ class World:
         """Generate a list of relevant terrain_chunks based on the current player and NPC positions."""
         new_relevant_terrain_chunks = set()
 
-        terrain_chunk_width = self.terrain_chunk_size * self.spritesheets['terrain'].tile_width
-        terrain_chunk_height = self.terrain_chunk_size * self.spritesheets['terrain'].tile_height
+        terrain_chunk_width = self.terrain_chunk_size * self.spritesheets[TYPE_TERRAIN].tile_width
+        terrain_chunk_height = self.terrain_chunk_size * self.spritesheets[TYPE_TERRAIN].tile_height
 
         # Find the terrain_chunks relevant to the player's position
         player_terrain_chunk_x = self.player_position[0] // self.terrain_chunk_size
@@ -82,25 +82,11 @@ class World:
     def is_passable_at(self, world_x, world_y):
         for terrain_chunk in self.terrain_chunks:
             if terrain_chunk.contains_position(world_x, world_y):
-                terrain_index = terrain_chunk.get_terrain_index_at(world_x, world_y)
+                terrain_index = terrain_chunk.get_layer_index_at(TYPE_TERRAIN, world_x, world_y)
                 if not self.terrain_types.is_passable(terrain_index):
                     return False
-                
-        for creature in self.creatures:
-            position = creature[1]
-            if position[0] == world_x and position[1] == world_y:
-                return False
             
         return True
 
-    def add_creature(self, name, x, y):
-        """Add a creature to the terrain_chunk."""
-        self.creatures.append((name, (x,y)))
-
-    def remove_creature(self, name, x, y):
-        """Remove a creature from the terrain_chunk."""
-        self.creatures.remove((name, (x,y)))
-
-    def get_creatures(self):
-        """Get all creatures in the terrain_chunk."""
-        return self.creatures
+        
+        

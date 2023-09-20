@@ -5,9 +5,14 @@ from lru_cache import LRUCache
 import configuration
 
 
-_seed_cache = LRUCache(capacity = configuration.get('world.generator.region.seeds.cache.capacity', 1000))
+_seed_cache = LRUCache(capacity = configuration.get('world.generator.region.seeds.cache.capacity', 100))
 
 def generate_seeds(spritesheet, x, y):
+    region_width = configuration.get('world.generator.region.size.width', 512)
+    region_height = configuration.get('world.generator.region.size.height', 512)
+    x -= x % region_width
+    y -= y % region_height
+
     global _seed_cache
     cached_result = _seed_cache.get((x, y))
     if cached_result:
@@ -24,16 +29,12 @@ def generate_seeds(spritesheet, x, y):
     
     remapped_regions = [spritesheet.get_index(region_definitions[choice][0]) for choice in range(len(region_definitions))]
 
-    region_width = configuration.get('world.generator.region.size.width', 1024)
-    region_height = configuration.get('world.generator.region.size.height', 1024)
     seeds_per_region = configuration.get('world.generator.region.seed_count', 4)
     rng_seed_a = configuration.get('world.generator.random.seed.a', 42)
     rng_seed_b = configuration.get('world.generator.random.seed.b', 43)
     rng_seed_c = configuration.get('world.generator.random.seed.c', 44)
 
     seeds = []
-    x -= x % region_width
-    y -= y % region_height
     for dy in [-2, -1, 0, 1, 2]:
         yy = y + dy * region_height
         lcg_y = LCG(yy + rng_seed_a)

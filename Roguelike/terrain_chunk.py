@@ -1,7 +1,8 @@
 from collections import deque
+from constants import *
 from gpu_shader import get_shader, RENDER
 from gpu_texture import Texture
-from item import Item
+from gpu_vertex_buffer import get_unit_quad
 import configuration
 import gpu
 import numpy as np
@@ -29,6 +30,9 @@ class TerrainChunk:
             
         def get_index_at(self, x, y):
             return self.indices[y][x]
+        
+        def set_index_at(self, x, y, new_index):
+            self.indices[y][x] = new_index
             
         def render(self, display, shader, spritesheet, size, world_x, world_y, center_x, center_y):
             if self._dirty:
@@ -56,7 +60,7 @@ class TerrainChunk:
             # Render the shader to the pygame screen at display, screen_y
             screen_x = int((world_x - center_x) * tile_width + (display.get_width() - tile_width) / 2)
             screen_y = int((world_y - center_y) * tile_height + (display.get_height() - tile_height) / 2)
-            shader.render(screen_x, screen_y, target_width, target_height)
+            shader.render(display, get_unit_quad(), screen_x, screen_y, target_width, target_height)
 
             
     def __init__(self, world_x, world_y, size, world):
@@ -64,12 +68,10 @@ class TerrainChunk:
         self.world_x = world_x
         self.world_y = world_y
         self.size = size
-        self.items = []  # List of movable objects in the terrain_chunk
-        self.features = []  # List of immobile objects in the terrain_chunk
-        self.layers = {name: TerrainChunk.Layer() for name in world.get_spritesheets()}
-        for layer_name in world.render_order:
-            indices = self.world.get_chunk_values(self.world_x, self.world_y, self.size) if layer_name == 'terrain' else np.full((size, size), -1)
-            self.layers[layer_name].assign_indices(indices)
+        self.layers = {layer_type: TerrainChunk.Layer() for layer_type in world.get_spritesheets()}
+        for layer_type in world.render_order:
+            indices = self.world.get_chunk_values(self.world_x, self.world_y, self.size) if layer_type == TYPE_TERRAIN else np.full((size, size), -1)
+            self.layers[layer_type].assign_indices(indices)
 
     def cleanup(self):
         for _, layer in self.layers.items():
@@ -115,57 +117,33 @@ class TerrainChunk:
             return self.world_x == other.world_x and self.world_y == other.world_y and self.size == other.size
         return False
     
-    def set_terrain_at(self, x, y, terrain_index):
-        self.terrain_indices[y][x] = terrain_index
-
     def render(self, display, center_x, center_y):
         shader = get_shader(RENDER, 'tile_grid_renderer')
         shader.use()
 
-        for layer_name in self.world.render_order:
-            layer = self.layers[layer_name]
-            spritesheet = self.world.get_spritesheets()[layer_name]
+        for layer_type in self.world.render_order:
+            layer = self.layers[layer_type]
+            spritesheet = self.world.get_spritesheets()[layer_type]
             layer.render(display, shader, spritesheet, self.size, self.world_x, self.world_y, center_x, center_y)
             gpu.start_blending()        
         gpu.stop_blending()
 
-    def get_terrain_index_at(self, world_x, world_y):
+    def get_layer_index_at(self, layer_type, world_x, world_y):
         # Calculate relative coordinates within the terrain_chunk
         rel_x = world_x - self.world_x
         rel_y = world_y - self.world_y
-        return self.layers['terrain'].get_index_at(rel_x, rel_y)
+        return self.layers[layer_type].get_index_at(rel_x, rel_y)
+    
+    def set_layer_index_at(self, layer_type, world_x, world_y, new_index):
+        rel_x = world_x - self.world_x
+        rel_y = world_y - self.world_y
+        self.layers[layer_type].set_index_at(rel_x, rel_y, new_index)
 
     def contains_position(self, x, y):
         return self.world_x <= x < self.world_x + self.size and self.world_y <= y < self.world_y + self.size
     
     def is_passable_at(self, world_x, world_y):
         return True
- 
-    def add_item(self, name, description, tile_index, x, y, quantity=1):
-        item = Item(name, description, tile_index, quantity)
-        self.items.append((item, (x, y)))
-        self._dirty = True
-    
-    def remove_item(self, name, x, y):
-        for item, position in self.items:
-            if item.name == name and position == (x, y):
-                self.items.remove((item, position))
-                self._dirty = True
-                break
-
-    def get_items(self):
-        return self.items
-
-    def add_feature(self, tile_index, x, y):
-        self.features.append((tile_index, (x,y)))
-        self._dirty = True
-
-    def remove_feature(self, tile_index, x, y):
-        self.features.remove((tile_index, (x,y)))
-        self._dirty = True
-
-    def get_features(self):
-        return self.features
 
     @staticmethod
     def cleanup_cache():

@@ -8,11 +8,6 @@ class Player:
         self.inventory = Inventory()
 
     def move(self, dx, dy):
-        """
-        Adjusts the player's position based on the given dx and dy offsets. 
-        The position changes are not wrapped around in this version since the world 
-        dynamically loads relevant terrain_chunks.
-        """
         new_x = self.world_x + dx
         new_y = self.world_y + dy
         if self.world.is_passable_at(new_x, new_y):
@@ -20,7 +15,4 @@ class Player:
             self.world_y = new_y
 
     def get_position(self):
-        """
-        Returns the player's current world coordinates.
-        """
         return self.world_x, self.world_y

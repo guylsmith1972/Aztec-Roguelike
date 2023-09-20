@@ -9,7 +9,7 @@ import pygame
 
 class SpriteSheet:
     def __init__(self, directory, tile_width=32, tile_height=32):
-        self.directory = f'Assets/{directory}'
+        self.directory = f'Assets/Sprites/{directory}'
         self.tile_width = tile_width
         self.tile_height = tile_height
         self.sheet_path = self._find_or_create_sheet()

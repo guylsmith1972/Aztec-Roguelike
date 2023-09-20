@@ -4,6 +4,7 @@ from OpenGL.GL.shaders import compileProgram, compileShader
 import configuration
 import gpu
 
+# Notes: use snake_case whenever possible
 
 _shaders = {}
 
@@ -36,8 +37,6 @@ def get_shader(kind, name):
                 self.vertex_shader = compileShader(vertex_shader_source, GL_VERTEX_SHADER)
                 self.fragment_shader = compileShader(fragment_shader_source, GL_FRAGMENT_SHADER)
                 self.shader_program = compileProgram(self.vertex_shader, self.fragment_shader)
-                self.vbo = None
-                self.vao = None
             else:
                 raise RuntimeError(f'Unknown shader kind: {kind}')
             
@@ -50,10 +49,14 @@ def get_shader(kind, name):
                 glUniform1f(location, *values)
             elif type == "2i": 
                 glUniform2i(location, *values)
+            elif type == "2iv": 
+                glUniform2iv(location, *values)
             elif type == "2f":
                 glUniform2f(location, *values)
             elif type == "3f":
                 glUniform3f(location, *values)
+            elif type == "4f":
+                glUniform4f(location, *values)
             elif type == "1i":
                 glUniform1i(location, *values)
             elif type == "1ui":
@@ -93,36 +96,24 @@ def get_shader(kind, name):
                 glDeleteShader(self.fragment_shader)
             glDeleteProgram(self.shader_program)
             
-        def render(self, screen_x, screen_y, width, height):
-            if self.vbo is None or self.vao is None:
-                vertices = [
-                    -1.0, -1.0,  # Bottom left
-                     1.0, -1.0,  # Bottom right
-                     1.0,  1.0,  # Top right
-                    -1.0,  1.0   # Top left
-                ]
-    
-                # Create VBO
-                self.vbo = glGenBuffers(1)
-                glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
-                glBufferData(GL_ARRAY_BUFFER, len(vertices)*4, (ctypes.c_float*len(vertices))(*vertices), GL_STATIC_DRAW)
-    
-                # Create VAO
-                self.vao = glGenVertexArrays(1)
-                glBindVertexArray(self.vao)
-                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, None)
-                glEnableVertexAttribArray(0)
-
+        def render(self, display, vertex_buffer, screen_x=0, screen_y=0, width=-1, height=-1, instance_count=1):
             # Set the viewport
+            if width == -1:
+                width = display.get_width()
+            if height == -1:
+                height = display.get_height()
             glViewport(screen_x, screen_y, width, height)
     
             # Use the shader program
             self.use()
     
-            # Render using the VAO
-            glBindVertexArray(self.vao)
-            glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
-            glBindVertexArray(0)
+            # Render using the vertex buffer
+            vertex_buffer.bind()
+            if instance_count == 1:
+                glDrawArrays(vertex_buffer.mode, 0, vertex_buffer.count)
+            elif instance_count > 1:
+                glDrawArraysInstanced(vertex_buffer.mode(), 0, vertex_buffer.count, instancecount=instance_count)
+            vertex_buffer.unbind()
 
         def compute(self, workgroup_count_x, workgroup_count_y, pre_invoke_function=None, post_invoke_function=None, iterations=1):
             # Use the shader program
