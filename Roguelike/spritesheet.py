@@ -1,4 +1,6 @@
+from gpu_shader import get_shader, RENDER
 from gpu_texture import Texture
+from gpu_vertex_buffer import *
 from PIL import Image
 import bidict
 import json
@@ -82,7 +84,23 @@ class SpriteSheet:
     def get_all_terrain_names(self):
         return self.sheet_map.keys()
 
-    def screen_to_world(self, screen, screen_x, screen_y, center_x, center_y):
-        world_x = (screen_x - (screen.get_width() - self.tile_width) / 2) / self.tile_width + center_x
-        world_y = (screen_y - (screen.get_height() - self.tile_height) / 2) / self.tile_height + center_y
+    def screen_to_world(self, display, screen_x, screen_y, center_x, center_y):
+        world_x = (screen_x - (display.get_width() - self.tile_width) / 2) / self.tile_width + center_x
+        world_y = (screen_y - (display.get_height() - self.tile_height) / 2) / self.tile_height + center_y
         return math.floor(world_x), math.floor(world_y)
+
+    def render(self, display, sprite_parameters, center_x, center_y):
+        # sprite_parameters is a numpy array of (x, y, index) tuples
+        shader = get_shader(RENDER, 'sprite_renderer')
+        shader.use()
+        
+        shader.set_uniform('spritesheet', 'sampler2D', self.texture.texture, 0)
+        shader.set_uniform('sprite_size_in_pixels', '2i', self.tile_width, self.tile_height)
+        shader.set_uniform('spritesheet_dimensions_in_sprites', '2i', *self.get_dimensions_in_tiles())
+        shader.set_uniform('camera_position_in_world', '2i', center_x, center_y)
+        
+
+        # TODO: Set up in_instance_position and in_spritesheet_index in the vertex shader using sprite_parameters
+
+        # Render the sprites
+        shader.render(display, get_unit_quad())

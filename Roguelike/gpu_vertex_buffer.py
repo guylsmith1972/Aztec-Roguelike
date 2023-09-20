@@ -9,21 +9,22 @@ class VertexBuffer:
         # Add other modes as needed
     }
     
-    def __init__(self, data, mode='triangle_fan', dimensions=2):
+    def __init__(self, data, dimensions, mode):
         if data is None:
-            raise ValueError("Data cannot be None.")
+            raise ValueError("data cannot be None.")
+
+        # Convert data to numpy array only if it isn't already one
+        if not isinstance(data, np.ndarray):
+            data = np.array(data, dtype=np.float32)
 
         self.count = len(data) // dimensions
         self.mode = self.MODES[mode]
-        
         self.vbo = glGenBuffers(1)
-        array_data = np.array(data, dtype=np.float32)
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
-        glBufferData(GL_ARRAY_BUFFER, array_data.nbytes, array_data, GL_STATIC_DRAW)
-
+        glBufferData(GL_ARRAY_BUFFER, data.nbytes, data, GL_STATIC_DRAW)
         self.vao = glGenVertexArrays(1)
         self.bind()
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, None)
+        glVertexAttribPointer(0, dimensions, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(0)
         self.unbind()
 
@@ -48,5 +49,5 @@ def get_unit_quad():
                      1.0, -1.0,  # Bottom right
                      1.0,  1.0,  # Top right
                     -1.0,  1.0   # Top left
-                ])
+                ], dimensions=2, mode='triangle_fan')
     return _unit_quad

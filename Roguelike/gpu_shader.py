@@ -112,7 +112,7 @@ def get_shader(kind, name):
             if instance_count == 1:
                 glDrawArrays(vertex_buffer.mode, 0, vertex_buffer.count)
             elif instance_count > 1:
-                glDrawArraysInstanced(vertex_buffer.mode(), 0, vertex_buffer.count, instancecount=instance_count)
+                glDrawArraysInstanced(vertex_buffer.mode, 0, vertex_buffer.count, instancecount=instance_count)
             vertex_buffer.unbind()
 
         def compute(self, workgroup_count_x, workgroup_count_y, pre_invoke_function=None, post_invoke_function=None, iterations=1):
