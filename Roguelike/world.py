@@ -4,6 +4,7 @@ from terrain_chunk import TerrainChunk
 from terrain_generator import generate_seeds, fill_chunk
 import configuration
 import math
+import numpy as np
 import terrain
 
 
@@ -78,6 +79,18 @@ class World:
         # Render terrain_chunks
         for terrain_chunk in self.terrain_chunks:
             terrain_chunk.render(display, center_x, center_y)
+            
+        # Render player (and mirrors for testing)
+        sprite_parameters = []
+        avatar_id = 0
+        for dy in [-10, 0, 10]:
+            for dx in [-10, 0, 10]:
+                sprite_parameters.append(self.player_position[0] + dx)
+                sprite_parameters.append(self.player_position[1] + dy)
+                sprite_parameters.append(avatar_id)
+                avatar_id += 1
+        avatar_spritesheet = self.get_spritesheets()[TYPE_AVATAR]
+        avatar_spritesheet.render(display, np.array(sprite_parameters, dtype=np.int32), center_x, center_y)
         
     def is_passable_at(self, world_x, world_y):
         for terrain_chunk in self.terrain_chunks:

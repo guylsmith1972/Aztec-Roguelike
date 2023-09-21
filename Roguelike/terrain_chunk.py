@@ -2,6 +2,7 @@ from collections import deque
 from constants import *
 from gpu_shader import get_shader, RENDER
 from gpu_texture import Texture
+from gpu_vertex_array import VertexArray
 from gpu_vertex_buffer import get_unit_quad
 import configuration
 import gpu
@@ -60,8 +61,13 @@ class TerrainChunk:
             # Render the shader to the pygame screen at display, screen_y
             screen_x = int((world_x - center_x) * tile_width + (display.get_width() - tile_width) / 2)
             screen_y = int((world_y - center_y) * tile_height + (display.get_height() - tile_height) / 2)
-            shader.render(display, get_unit_quad(), screen_x, screen_y, target_width, target_height)
+            unit_quad = get_unit_quad()
+            vertex_array = VertexArray(shader, {'in_position': unit_quad})
+            vertex_array.bind()
 
+            shader.render(display, unit_quad, screen_x, screen_y, target_width, target_height)
+            vertex_array.unbind()
+            vertex_array.cleanup()
             
     def __init__(self, world_x, world_y, size, world):
         self.world = world

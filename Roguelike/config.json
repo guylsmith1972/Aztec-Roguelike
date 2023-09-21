@@ -21,6 +21,10 @@
       "noisy_voronoi": {
         "compute": "noisy_voronoi.glsl"
       },
+      "sprite_renderer": {
+        "fragment": "sprite_renderer_fragment.glsl",
+        "vertex": "sprite_renderer_vertex.glsl"
+      },
       "tile_grid_renderer": {
         "fragment": "tile_grid_renderer_fragment.glsl",
         "vertex": "tile_grid_renderer_vertex.glsl"
@@ -76,7 +80,7 @@
   "terrain": {
     "chunk_size": 512,
     "max_invalid_chunks": 100,
-    "tile_size": 4
+    "tile_size": 8
   },
   "ui": {
     "map": {

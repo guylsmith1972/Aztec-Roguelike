@@ -71,7 +71,7 @@ def get_shader(kind, name):
                 glUniform1i(location, texture_unit)          # set the sampler2D uniform to the texture unit index
             else:
                 raise RuntimeError(f'Cannot set uniform for type {type}')
-
+            
         def get_workgroup_size(self):
             # Assuming local workgroup size is 16x16 in the shader
             return 16, 16
@@ -96,7 +96,7 @@ def get_shader(kind, name):
                 glDeleteShader(self.fragment_shader)
             glDeleteProgram(self.shader_program)
             
-        def render(self, display, vertex_buffer, screen_x=0, screen_y=0, width=-1, height=-1, instance_count=1):
+        def render(self, display, vertex_buffer, screen_x=0, screen_y=0, width=-1, height=-1, instance_count=-1):
             # Set the viewport
             if width == -1:
                 width = display.get_width()
@@ -104,16 +104,11 @@ def get_shader(kind, name):
                 height = display.get_height()
             glViewport(screen_x, screen_y, width, height)
     
-            # Use the shader program
-            self.use()
-    
             # Render using the vertex buffer
-            vertex_buffer.bind()
-            if instance_count == 1:
+            if instance_count == -1:
                 glDrawArrays(vertex_buffer.mode, 0, vertex_buffer.count)
-            elif instance_count > 1:
-                glDrawArraysInstanced(vertex_buffer.mode, 0, vertex_buffer.count, instancecount=instance_count)
-            vertex_buffer.unbind()
+            elif instance_count > 0:
+                glDrawArraysInstanced(vertex_buffer.mode, 0, vertex_buffer.count, instance_count)
 
         def compute(self, workgroup_count_x, workgroup_count_y, pre_invoke_function=None, post_invoke_function=None, iterations=1):
             # Use the shader program

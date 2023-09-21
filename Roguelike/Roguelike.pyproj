@@ -25,6 +25,7 @@
     <Compile Include="Assets\Shaders\render\sprite_renderer_fragment.glsl" />
     <Compile Include="biomes.py" />
     <Compile Include="constants.py" />
+    <Compile Include="gpu_vertex_array.py" />
     <Compile Include="gpu_vertex_buffer.py" />
     <Compile Include="lru_cache.py" />
     <Compile Include="movable.py" />

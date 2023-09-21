@@ -1,6 +1,7 @@
 from gpu_shader import get_shader, RENDER
 from gpu_texture import Texture
-from gpu_vertex_buffer import *
+from gpu_vertex_array import VertexArray
+from gpu_vertex_buffer import VertexBuffer, get_unit_quad
 from PIL import Image
 import bidict
 import json
@@ -90,17 +91,25 @@ class SpriteSheet:
         return math.floor(world_x), math.floor(world_y)
 
     def render(self, display, sprite_parameters, center_x, center_y):
-        # sprite_parameters is a numpy array of (x, y, index) tuples
+        # sprite_parameters should be an array of (x, y, index) tuples
         shader = get_shader(RENDER, 'sprite_renderer')
         shader.use()
         
         shader.set_uniform('spritesheet', 'sampler2D', self.texture.texture, 0)
-        shader.set_uniform('sprite_size_in_pixels', '2i', self.tile_width, self.tile_height)
-        shader.set_uniform('spritesheet_dimensions_in_sprites', '2i', *self.get_dimensions_in_tiles())
-        shader.set_uniform('camera_position_in_world', '2i', center_x, center_y)
+        shader.set_uniform('sprite_size_in_pixels', '2f', self.tile_width, self.tile_height)
+        shader.set_uniform('spritesheet_dimensions_in_sprites', '2f', *self.get_dimensions_in_tiles())
+        shader.set_uniform('camera_position_in_world', '2f', center_x, center_y)
+        shader.set_uniform('screen_dimensions_in_pixels', '2f', display.get_width(), display.get_height())
         
-
-        # TODO: Set up in_instance_position and in_spritesheet_index in the vertex shader using sprite_parameters
-
+        sprite_parameters_buffer = VertexBuffer(sprite_parameters, 3, None, instance_divisor=1)
+        unit_quad = get_unit_quad()
+        vertex_array = VertexArray(shader, {'in_position': unit_quad, 'in_instance_sprite_parameters': sprite_parameters_buffer})
+        vertex_array.bind()
+        
         # Render the sprites
-        shader.render(display, get_unit_quad())
+        shader.render(display, unit_quad, instance_count=sprite_parameters_buffer.count)
+
+        # Unbind and cleanup
+        vertex_array.unbind()
+        vertex_array.cleanup()
+        sprite_parameters_buffer.cleanup()

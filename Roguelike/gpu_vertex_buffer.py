@@ -1,43 +1,49 @@
 from OpenGL.GL import *
 import numpy as np
 
-# Notes: use snake_case whenever possible
+# Notes: use snake_case wherever possible
 
 class VertexBuffer:
     MODES = {
+        None: None,
         'triangle_fan': GL_TRIANGLE_FAN,
         # Add other modes as needed
     }
     
-    def __init__(self, data, dimensions, mode):
-        if data is None:
-            raise ValueError("data cannot be None.")
-
+    def __init__(self, data, dimensions, mode, instance_divisor=0):
+        self.dimensions = dimensions
+        self.mode = self.MODES[mode]
+        self.count = len(data) // dimensions
+        self.instance_divisor = instance_divisor
+        
         # Convert data to numpy array only if it isn't already one
         if not isinstance(data, np.ndarray):
             data = np.array(data, dtype=np.float32)
-
-        self.count = len(data) // dimensions
-        self.mode = self.MODES[mode]
-        self.vbo = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
-        glBufferData(GL_ARRAY_BUFFER, data.nbytes, data, GL_STATIC_DRAW)
-        self.vao = glGenVertexArrays(1)
+        
+        # Create a VBO (Vertex Buffer Object) and upload the data
+        self.vbo_id = glGenBuffers(1)
         self.bind()
-        glVertexAttribPointer(0, dimensions, GL_FLOAT, GL_FALSE, 0, None)
-        glEnableVertexAttribArray(0)
+        glBufferData(GL_ARRAY_BUFFER, data.nbytes, data, GL_STATIC_DRAW)
         self.unbind()
 
     def bind(self):
-        glBindVertexArray(self.vao)
+        """Bind the VBO."""
+        glBindBuffer(GL_ARRAY_BUFFER, self.vbo_id)
 
     def unbind(self):
-        glBindVertexArray(0)
+        """Unbind the VBO."""
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+
+    def set_attribute_pointer(self, attribute_location):
+        """Set the vertex attribute pointer."""
+        glVertexAttribPointer(attribute_location, self.dimensions, GL_FLOAT, GL_FALSE, 0, ctypes.c_void_p(0))
+        if self.instance_divisor > 0:
+            glVertexAttribDivisor(attribute_location, self.instance_divisor)
+        glEnableVertexAttribArray(attribute_location)
 
     def cleanup(self):
-        glDeleteBuffers(1, [self.vbo])
-        glDeleteVertexArrays(1, [self.vao])
-
+        """Cleanup the VBO."""
+        glDeleteBuffers(1, [self.vbo_id])
 
 _unit_quad = None
 

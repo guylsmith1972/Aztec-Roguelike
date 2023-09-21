@@ -1,9 +1,9 @@
 #version 330
 
-layout(location = 0) in vec2 inPosition;
-out vec2 fragCoord;
+layout(location = 0) in vec2 in_position;
+out vec2 frag_coord;
 
 void main() {
-    fragCoord = inPosition;
-    gl_Position = vec4(inPosition, 0.0, 1.0);
+    frag_coord = in_position;
+    gl_Position = vec4(in_position, 0.0, 1.0);
 }
