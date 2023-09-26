@@ -19,12 +19,12 @@ def generic_tree():
     # c = growing leaf cluster
     # L = grown leaf
     rules = {
-        'r': [('Rs{1,1}', 1)],
-        's': [('S{1,2}s{0,1}', 1)],
-        'S': [('T[b]{1,3}', 1)],
-        'b': [('B[w]{1,6}', 1)],
-        'w': [('W[c]{3,7}', 1)],
-        'c': [('W[L]{1,5}', 1)]
+        'r': [('R s{1,1}', 1)],
+        's': [('S{1,2} s{0,1}', 1)],
+        'S': [('T [b]{1,3}', 1)],
+        'b': [('B [w]{1,6}', 1)],
+        'w': [('W [c]{3,7}', 1)],
+        'c': [('W [L]{1,5}', 1)]
     }
     return LSystem(rules)
 
@@ -165,7 +165,7 @@ def test_lsystem():
     rng = random.Random(42)
     result = lsystem.iterate('r', 20, rng)
     print(result)
-    render_lsystem_to_file(result, {'branching_angle': {'yaw': 20, 'roll': 20, 'pitch': 20}, 'segment_length': 10, 'segment_thickness': 1, 'leaf_size': 0.1, 'colors': {'trunk': (0,0,0), 'leaf': (0,1,0)}}, 'test_article.png')
+    # render_lsystem_to_file(result, {'branching_angle': {'yaw': 20, 'roll': 20, 'pitch': 20}, 'segment_length': 10, 'segment_thickness': 1, 'leaf_size': 0.1, 'colors': {'trunk': (0,0,0), 'leaf': (0,1,0)}}, 'test_article.png')
     
 
 if __name__ == '__main__':

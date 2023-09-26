@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fe791785-016e-4373-ad73-cb7f79ace54a</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>population_center.py</StartupFile>
+    <StartupFile>Scratch\treegen.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
