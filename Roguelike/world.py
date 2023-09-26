@@ -67,7 +67,7 @@ class World:
             TerrainChunk.mark_as_invalid(terrain_chunk.world_x, terrain_chunk.world_y, terrain_chunk.size)
 
         return new_relevant_terrain_chunks
-
+     
     def update_positions(self, screen, new_player_position):
         """
         Update the player's and NPCs' positions, and refresh the list of relevant terrain_chunks.
@@ -80,15 +80,12 @@ class World:
         for terrain_chunk in self.terrain_chunks:
             terrain_chunk.render(display, center_x, center_y)
             
-        # Render player (and mirrors for testing)
+        # Render player
         sprite_parameters = []
         avatar_id = 0
-        for dy in [-10, 0, 10]:
-            for dx in [-10, 0, 10]:
-                sprite_parameters.append(self.player_position[0] + dx)
-                sprite_parameters.append(self.player_position[1] + dy)
-                sprite_parameters.append(avatar_id)
-                avatar_id += 1
+        sprite_parameters.append(self.player_position[0])
+        sprite_parameters.append(self.player_position[1])
+        sprite_parameters.append(avatar_id)
         avatar_spritesheet = self.get_spritesheets()[TYPE_AVATAR]
         avatar_spritesheet.render(display, np.array(sprite_parameters, dtype=np.int32), center_x, center_y)
         

@@ -12,7 +12,7 @@
   },
   "debug": {
     "rendering": {
-      "show_chunk_lines": true,
+      "show_chunk_lines": false,
       "show_grid_lines": false
     }
   },
@@ -28,10 +28,6 @@
       "tile_grid_renderer": {
         "fragment": "tile_grid_renderer_fragment.glsl",
         "vertex": "tile_grid_renderer_vertex.glsl"
-      },
-      "tile_grid_renderer_loop": {
-        "fragment": "tile_grid_renderer_loop_fragment.glsl",
-        "vertex": "tile_grid_renderer_loop_vertex.glsl"
       }
     },
     "shared_objects": {
@@ -80,7 +76,7 @@
   "terrain": {
     "chunk_size": 512,
     "max_invalid_chunks": 100,
-    "tile_size": 8
+    "tile_size": 4
   },
   "ui": {
     "map": {
