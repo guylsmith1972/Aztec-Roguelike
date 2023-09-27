@@ -1,51 +1,45 @@
-:- style_check(-discontiguous).
+is_a(hematite, mineral).
+is_a(magnetite, mineral).
+is_a(chalcopyrite, mineral).
+is_a(cassiterite, mineral).
+is_a(lignite, mineral).
 
 
-% A region with iron and coal deposits, and a moderate or larger population, should have a smelting industry.
-industry(Region, smelting) :-
-    resource(Region, iron),
-    resource(Region, coal),
-    (population(Region, moderate); population(Region, large)).
+is_a(hematite, iron_ore).
+is_a(magnetite, iron_ore).
+is_a(chalcopyrite, copper_ore).
+is_a(cassiterite, tin_ore).
+is_a(lignite, coal).
 
-% Regions with any mineral deposit should have a mining industry as long as there is at least some population.
-industry(Region, mining) :-
-    (resource(Region, iron); resource(Region, coal); resource(Region, gold); resource(Region, stone)),
-    \+ population(Region, none).
-
-% If a region lacks iron, but has coal and population, it should have trade connections supplying iron.
-trade(Region, OtherRegion) :-
-    \+ resource(Region, iron),
-    resource(Region, coal),
-    \+ population(Region, none),
-    resource(OtherRegion, iron).
-
-% In late antiquity, coastal regions with wood resources might have a shipbuilding industry.
-resource(Region, coast). % Represents regions that are coastal
-industry(Region, shipbuilding) :-
-    resource(Region, coast),
-    resource(Region, wood).
-
-% Regions with significant food resources and large populations might have a monarchy.
-politics(Region, monarchy) :-
-    resource(Region, food),
-    population(Region, large).
-
-% Regions with stone and moderate population might have structures and can be considered as republics.
-politics(Region, republic) :-
-    resource(Region, stone),
-    population(Region, moderate).
-
-% Regions with significant gold resources may be major trade hubs.
-industry(Region, trade) :-
-    resource(Region, gold).
-
-% If a region lacks food but has some population, it should have trade connections supplying food.
-trade(Region, OtherRegion) :-
-    \+ resource(Region, food),
-    \+ population(Region, none),
-    resource(OtherRegion, food).
+is_a(iron_ore, metal_ore).
+is_a(copper_ore, metal_ore).
+is_a(tin_ore, metal_ore).
+is_a(A, C) :-
+    is_a(A, B),
+    is_a(B, C).
 
 
-resource(alicetopia, iron).
-resource(alicetopia, coal).
-population(alicetopia, moderate).
+
+
+
+
+alloy(bronze, [copper, tin]).
+
+
+smelting_fuel(coal).
+smelting_fuel(charcoal).
+
+% Mining industry rule: Region should have the ore as a local resource
+industry(Region, mining, Details) :-
+    is_a(Mineral, mineral),
+    local_resource(Region, Mineral),
+    Details = [Mineral].
+    
+% Local resources
+local_resource(alicetopia, hematite).
+local_resource(alicetopia, lignite).
+
+% Imported resources
+imported_resource(alicetopia, copper_ore).
+imported_resource(alicetopia, tin).
+

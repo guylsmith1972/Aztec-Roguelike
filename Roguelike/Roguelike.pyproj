@@ -61,28 +61,15 @@
     <Compile Include="terrain.py" />
     <Compile Include="terrain_generator.py" />
     <Compile Include="Scratch\turtle3d.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\draw.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\factor.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\factorSparse.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\filetypes.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\graphmodel.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\ising.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\messagepass.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\misc.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\montecarlo.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\search.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\varset_py.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\weighted.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\wmb.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\wogm.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\pyGMs\__init__.py" />
-    <Compile Include="ThirdParty\pyGMs-0.1.1\setup.py" />
     <Compile Include="utility.py" />
     <Compile Include="NonProduction\BackBurner\voronoi.py" />
     <Compile Include="world.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Shaders\render\sprite_renderer_vertex.glsl" />
+    <Content Include="Assets\Source\categories.pl" />
+    <Content Include="Assets\Source\crafting.pl" />
+    <Content Include="Assets\Source\minerals.pl" />
     <Content Include="Assets\Source\regions.pl" />
     <Content Include="Assets\Sprites\Avatars\originals\00011-2468047421.png" />
     <Content Include="Assets\Sprites\Avatars\originals\00012-2468047422.png" />
@@ -247,13 +234,6 @@
     <Content Include="NonProduction\BackBurner\Shaders\erosion.glsl" />
     <Content Include="Assets\Shaders\compute\noisy_voronoi.glsl" />
     <Content Include="config.json" />
-    <Content Include="ThirdParty\pyGMs-0.1.1.tar" />
-    <Content Include="ThirdParty\pyGMs-0.1.1\PKG-INFO" />
-    <Content Include="ThirdParty\pyGMs-0.1.1\pyGMs.egg-info\dependency_links.txt" />
-    <Content Include="ThirdParty\pyGMs-0.1.1\pyGMs.egg-info\PKG-INFO" />
-    <Content Include="ThirdParty\pyGMs-0.1.1\pyGMs.egg-info\SOURCES.txt" />
-    <Content Include="ThirdParty\pyGMs-0.1.1\pyGMs.egg-info\top_level.txt" />
-    <Content Include="ThirdParty\pyGMs-0.1.1\setup.cfg" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets\" />
@@ -284,9 +264,7 @@
     <Folder Include="Scratch\" />
     <Folder Include="NonProduction\PythonProofOfConcept\" />
     <Folder Include="ThirdParty\" />
-    <Folder Include="ThirdParty\pyGMs-0.1.1\" />
-    <Folder Include="ThirdParty\pyGMs-0.1.1\pyGMs.egg-info\" />
-    <Folder Include="ThirdParty\pyGMs-0.1.1\pyGMs\" />
+    <Folder Include="ThirdParty\SWIProlog\" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env1\">
