@@ -158,7 +158,6 @@ def render_lsystem_to_file(lsystem_string, params, filename):
     writer.Write()
 
 
-
 def test_lsystem():
     lsystem = generic_tree()
 

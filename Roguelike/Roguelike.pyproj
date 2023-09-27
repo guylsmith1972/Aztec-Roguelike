@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fe791785-016e-4373-ad73-cb7f79ace54a</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Scratch\treegen.py</StartupFile>
+    <StartupFile>prolog.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -47,6 +47,8 @@
     <Compile Include="Scratch\colors.py" />
     <Compile Include="L_system.py" />
     <Compile Include="population_center.py" />
+    <Compile Include="Scratch\constraints.py" />
+    <Compile Include="prolog.py" />
     <Compile Include="Scratch\som.py" />
     <Compile Include="Scratch\treegen.py" />
     <Compile Include="Scratch\wfc.py" />
@@ -81,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Shaders\render\sprite_renderer_vertex.glsl" />
+    <Content Include="Assets\Source\regions.pl" />
     <Content Include="Assets\Sprites\Avatars\originals\00011-2468047421.png" />
     <Content Include="Assets\Sprites\Avatars\originals\00012-2468047422.png" />
     <Content Include="Assets\Sprites\Avatars\originals\00013-2468047423.png" />
@@ -254,6 +257,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets\" />
+    <Folder Include="Assets\Source\" />
     <Folder Include="Assets\Sprites\Avatars\" />
     <Folder Include="Assets\Sprites\Avatars\originals\" />
     <Folder Include="Assets\Sprites\" />
