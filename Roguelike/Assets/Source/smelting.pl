@@ -8,16 +8,33 @@
 :- asserta(is_a(high_temperature_fuel, fuel)).
 
 
-:- asserta(is_a(limestone, calcium_carbonate_flux)).
-:- asserta(is_a(dolomite, calcium_carbonate_flux)).
-:- asserta(is_a(calcite, calcium_carbonate_flux)).
-:- asserta(is_a(marble, calcium_carbonate_flux)).
-:- asserta(is_a(oyster_shells, calcium_carbonate_flux)).
-
 :- asserta(is_a(borax, sodium_borate_flux)).
+:- asserta(is_a(calcite, calcium_carbonate_flux)).
+:- asserta(is_a(chalk, calcium_carbonate_flux)).
+:- asserta(is_a(dolomite, calcium_carbonate_flux)).
+:- asserta(is_a(lead, lead_based_flux)).
+:- asserta(is_a(limestone, calcium_carbonate_flux)).
+:- asserta(is_a(magnesia, magnesium_carbonate_flux)).
+:- asserta(is_a(marble, calcium_carbonate_flux)).
+:- asserta(is_a(natron, sodium_carbonate_flux)).
+:- asserta(is_a(oyster_shells, calcium_carbonate_flux)).
+:- asserta(is_a(plant_ashes, sodium_carbonate_flux)).
+:- asserta(is_a(potash, potassium_carbonate_flux)).
+:- asserta(is_a(salt, sodium_chloride_flux)).
 :- asserta(is_a(soda_ash, sodium_carbonate_flux)).
-:- asserta(is_a(fluorspar, calcium_fluoride_flux)).
-:- asserta(is_a(silica, silicon_dioxide_flux)).
+
+
+
+removes_with(alumina, ['calcium_carbonate_flux', 'magnesium_carbonate_flux']).
+removes_with(barium, ['calcium_carbonate_flux']).
+removes_with(base_metal_oxides, ['sodium_borate_flux', 'sodium_chloride_flux']).
+removes_with(lead_oxide, ['sodium_carbonate_flux']).
+removes_with(phosphorus, ['calcium_carbonate_flux']).
+removes_with(quartz, ['calcium_carbonate_flux', 'magnesium_carbonate_flux']).
+removes_with(silica, ['calcium_carbonate_flux', 'sodium_borate_flux', 'sodium_carbonate_flux', 'magnesium_carbonate_flux', 'potassium_carbonate_flux']).
+removes_with(sulfur, ['calcium_carbonate_flux']).
+removes_with(zinc, ['lead_based_flux']).
+
 
 smelting_flux(Ore, Flux) :- conforms_to(Ore, iron_ore), conforms_to(Flux, calcium_carbonate_flux).
 smelting_flux(Ore, Flux) :- conforms_to(Ore, tin_ore), conforms_to(Flux, calcium_carbonate_flux).
