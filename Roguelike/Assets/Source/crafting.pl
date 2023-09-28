@@ -1,18 +1,4 @@
 
-% Define the relationships between specific materials and their categories.
-is_a(hematite, iron_ore).
-is_a(magnetite, iron_ore).
-
-% Define the relationships for high_temperature_fuel
-is_a(coal, high_temperature_fuel).
-is_a(charcoal, high_temperature_fuel).
-
-% Define lignite as a type of coal
-is_a(lignite, coal).
-
-% Recipe for iron_ingot
-recipe([iron_ore, high_temperature_fuel], iron_ingot).
-
 % Predicate to determine if a given material can be used for a recipe.
 can_use(Material, RequiredMaterial) :-
     is_a(Material, RequiredMaterial).

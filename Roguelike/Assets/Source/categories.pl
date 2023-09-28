@@ -1,25 +1,28 @@
-:- module(categories, [ancestor/2, root/2, parent/2, conforms_to/2]).
 
-% internally used predicates
-transitive_is_a(A, C) :- is_a(A, C).
-transitive_is_a(A, C) :-
+conforms_to(A, C) :- is_a(A, C).
+conforms_to(A, C) :-
     is_a(A, B),
-    transitive_is_a(B, C).
-
-
-
-% other user-level predicates
+    conforms_to(B, C).
 
 % get immediate parents of A
 parent(A, Parent) :- is_a(Parent, A).
 
 % get all ancestors of A
-ancestor(A, Ancestor) :- transitive_is_a(Ancestor, A).
+ancestor(A, Ancestor) :- conforms_to(Ancestor, A).
 
 % get all ancestors of A which do not themselves have ancestors
 root(A, Root) :-
-    transitive_is_a(Root, A),
-    \+ transitive_is_a(_, Root).  % Root should not have any ancestor
+    conforms_to(Root, A),
+    \+ conforms_to(_, Root).  % Root should not have any ancestor
 
+% get immediate children of A
+children(A, Child) :- is_a(A, Child).
 
-conforms_to(A, B) :- transitive_is_a(A, B).
+% get all descentants of A
+descendant(A, Descendant) :- conforms_to(A, Descendant).
+
+% get all descendants of A which do not themselves have descendants
+leaf(A, Leaf) :-
+    conforms_to(A, Leaf),
+    \+ conforms_to(Leaf, _).  % Leaf should not have any descendant
+

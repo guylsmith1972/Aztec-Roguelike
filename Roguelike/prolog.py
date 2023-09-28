@@ -26,15 +26,8 @@ class PrologInterface:
 
 
 def main():
-    prolog_engine = PrologInterface(['minerals.pl'])
-    # prolog_engine.assert_fact('is_a(a, b)')
-    # prolog_engine.assert_fact('is_a(b, c)')
-    # prolog_engine.assert_fact('is_a(d, c)')
-    # print(prolog_engine.query('ancestor(c, Ancestor)'))
-    # print(prolog_engine.query('root(c, Root)'))
-    # print(prolog_engine.query('parent(c, Parent)'))
-    print(prolog_engine.query('can_smelt(hematite)'))
-    
+    prolog_engine = PrologInterface(['smelting.pl'])
+    print(prolog_engine.query('smelt([cassiterite, Fuel, Flux], Furnace, Products)'))
 
 if __name__ == '__main__':
     main()

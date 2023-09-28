@@ -69,8 +69,9 @@
     <Content Include="Assets\Shaders\render\sprite_renderer_vertex.glsl" />
     <Content Include="Assets\Source\categories.pl" />
     <Content Include="Assets\Source\crafting.pl" />
-    <Content Include="Assets\Source\minerals.pl" />
+    <Content Include="Assets\Source\rocks_and_minerals.pl" />
     <Content Include="Assets\Source\regions.pl" />
+    <Content Include="Assets\Source\smelting.pl" />
     <Content Include="Assets\Sprites\Avatars\originals\00011-2468047421.png" />
     <Content Include="Assets\Sprites\Avatars\originals\00012-2468047422.png" />
     <Content Include="Assets\Sprites\Avatars\originals\00013-2468047423.png" />
