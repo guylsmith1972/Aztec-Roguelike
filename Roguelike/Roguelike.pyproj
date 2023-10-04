@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fe791785-016e-4373-ad73-cb7f79ace54a</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>prolog.py</StartupFile>
+    <StartupFile>main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -69,6 +69,7 @@
     <Content Include="Assets\Shaders\render\sprite_renderer_vertex.glsl" />
     <Content Include="Assets\Source\categories.pl" />
     <Content Include="Assets\Source\crafting.pl" />
+    <Content Include="Assets\Source\lcg.pl" />
     <Content Include="Assets\Source\rocks_and_minerals.pl" />
     <Content Include="Assets\Source\regions.pl" />
     <Content Include="Assets\Source\smelting.pl" />

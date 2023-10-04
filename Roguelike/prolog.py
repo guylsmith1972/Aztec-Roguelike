@@ -27,7 +27,9 @@ class PrologInterface:
 
 def main():
     prolog_engine = PrologInterface(['smelting.pl'])
-    print(prolog_engine.query('smelt([cassiterite, Fuel, Flux], Furnace, Products)'))
+    # print(prolog_engine.query('smelt([cassiterite, Fuel, Flux], Furnace, Products)'))
+    print(prolog_engine.query('combination_to_remove([alumina, barium], FluxCombination)'))
+    print(prolog_engine.query('combination_to_remove(Impurities, [calcium_carbonate_flux])'))
 
 if __name__ == '__main__':
     main()

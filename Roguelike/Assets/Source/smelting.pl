@@ -1,4 +1,4 @@
-:- [ 'rocks_and_minerals.pl' ].
+:- [ 'lcg.pl', 'rocks_and_minerals.pl' ].
 
 :- asserta(is_a(anthracite, high_temperature_fuel)).
 :- asserta(is_a(charcoal, high_temperature_fuel)).
@@ -25,22 +25,46 @@
 
 
 
-removes_with(alumina, ['calcium_carbonate_flux', 'magnesium_carbonate_flux']).
-removes_with(barium, ['calcium_carbonate_flux']).
-removes_with(base_metal_oxides, ['sodium_borate_flux', 'sodium_chloride_flux']).
-removes_with(lead_oxide, ['sodium_carbonate_flux']).
-removes_with(phosphorus, ['calcium_carbonate_flux']).
-removes_with(quartz, ['calcium_carbonate_flux', 'magnesium_carbonate_flux']).
-removes_with(silica, ['calcium_carbonate_flux', 'sodium_borate_flux', 'sodium_carbonate_flux', 'magnesium_carbonate_flux', 'potassium_carbonate_flux']).
-removes_with(sulfur, ['calcium_carbonate_flux']).
-removes_with(zinc, ['lead_based_flux']).
+removes_with(alumina, [calcium_carbonate_flux, magnesium_carbonate_flux]).
+removes_with(barium, [calcium_carbonate_flux]).
+removes_with(base_metal_oxides, [sodium_borate_flux, sodium_chloride_flux]).
+removes_with(lead_oxide, [sodium_carbonate_flux]).
+removes_with(phosphorus, [calcium_carbonate_flux]).
+removes_with(quartz, [calcium_carbonate_flux, magnesium_carbonate_flux]).
+removes_with(silica, [calcium_carbonate_flux, magnesium_carbonate_flux, potassium_carbonate_flux, sodium_borate_flux, sodium_carbonate_flux]).
+removes_with(sulfur, [calcium_carbonate_flux]).
+removes_with(zinc, [lead_based_flux]).
+
+
+
+
+% Find a combination of fluxes that removes a list of impurities
+combination_to_remove([], []).
+combination_to_remove([Impurity | RestImpurities], FluxCombination) :-
+    removes_with(Impurity, FluxOptions),
+    member(Flux, FluxOptions),
+    combination_to_remove(RestImpurities, RestCombination),
+    append([Flux], RestCombination, FluxCombinationUnfiltered),
+    remove_duplicates(FluxCombinationUnfiltered, FluxCombination).
+
+% Helper predicate to remove duplicates from a list
+remove_duplicates([], []).
+remove_duplicates([X | Xs], Ys) :-
+    member(X, Xs),
+    !,
+    remove_duplicates(Xs, Ys).
+remove_duplicates([X | Xs], [X | Ys]) :-
+    remove_duplicates(Xs, Ys).
+
+
+
 
 
 smelting_flux(Ore, Flux) :- conforms_to(Ore, iron_ore), conforms_to(Flux, calcium_carbonate_flux).
 smelting_flux(Ore, Flux) :- conforms_to(Ore, tin_ore), conforms_to(Flux, calcium_carbonate_flux).
 smelting_flux(Ore, Flux) :- conforms_to(Ore, lead_ore), conforms_to(Flux, calcium_carbonate_flux).
-smelting_flix(Ore, Flux) :- conforms_to(Ore, gold_ore), conforms_to(Flux, sodium_borate_flux).
-smelting_flix(Ore, Flux) :- conforms_to(Ore, gold_ore), conforms_to(Flux, sodium_carbonate_flux).
+smelting_flux(Ore, Flux) :- conforms_to(Ore, gold_ore), conforms_to(Flux, sodium_borate_flux).
+smelting_flux(Ore, Flux) :- conforms_to(Ore, gold_ore), conforms_to(Flux, sodium_carbonate_flux).
 
 smelting_fuel(Ore, Fuel) :- conforms_to(Ore, iron_ore), conforms_to(Fuel, high_temperature_fuel).
 smelting_fuel(Ore, Fuel) :- conforms_to(Ore, tin_ore), conforms_to(Fuel, fuel).
