@@ -1,0 +1,35 @@
+# Ruleset for generating item names and properties.
+
+# --- Entry Point ---
+# This rule determines the base type of a weapon.
+# A legendary weapon has a small chance to be chosen.
+weapon:
+    sword @10
+    axe @5
+    mace @5
+    legendary_weapon(0.05) @1
+
+# --- Sword Components ---
+sword:
+    [material]_sword_of_[modifier] @3
+    [material]_sword @1
+
+material:
+    bronze @10
+    iron @5
+    obsidian @1
+
+modifier:
+    sharpness @5
+    bleeding @2
+    ruin @1
+
+# --- Axe Components ---
+axe:
+    [material]_battle_axe_of_cleaving
+
+# --- Legendary Weapon ---
+# This rule uses a dynamic, context-sensitive function that must be
+# registered with the LSystemManager in Python.
+legendary_weapon:
+    dynamic: generate_legendary_weapon

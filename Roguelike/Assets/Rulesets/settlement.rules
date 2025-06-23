@@ -1,0 +1,34 @@
+// L-System Ruleset for Generating a Settlement Map
+//
+// --- Syntax Key ---
+// label(name)       : Creates a named node.
+// connect(name)     : Creates a directed edge to a named node.
+// [ ]               : Creates a new branch in the graph.
+// symbol{min,max}   : Creates a random number of 'symbol' nodes.
+
+// --- Entry Point ---
+start:
+    gate label(gate) town_square temple residential_area
+
+// --- Location Definitions ---
+town_square:
+    well market_stalls
+
+market_stalls:
+    [ blacksmith label(blacksmith) ] [ alchemist ] connect(gate)
+
+temple:
+    altar [ library ] connect(town_square)
+
+residential_area:
+    house{3,6} [ connect(blacksmith) ]
+
+// --- Terminal Node Definitions ---
+// Empty rules signify that these symbols are terminal and do not expand.
+well:
+altar:
+library:
+house:
+blacksmith:
+alchemist:
+gate:
