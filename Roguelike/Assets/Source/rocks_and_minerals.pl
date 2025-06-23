@@ -6,6 +6,7 @@
 :- asserta(is_a(mineral, rock)).
 
 
+
 define_metal_ore(_, [], _, _, _).
 define_metal_ore(Name, [Head|Tail], Impurities, AlternateNames, Frequency) :-
     define_metal_ore(Name, Tail, Impurities, AlternateNames),
@@ -18,7 +19,7 @@ define_metal_ore(Name, [Head|Tail], Impurities, AlternateNames, Frequency) :-
     asserta(also_known_as(Name, AlternateNames)),
     asserta(resource_frequency(Name, Frequency)),
     atom_concat(Name, "_deposit", MineralDeposit),
-    asserta(natural_resource(MineralDeposit, Name)).    
+    asserta(natural_resource(MineralDeposit)).
 
 
 :- define_metal_ore(argentite, [silver], [silica, barium, base_metal_oxides], [argentum], 0.01).

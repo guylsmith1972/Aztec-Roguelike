@@ -6,6 +6,7 @@ import erosion
 import gpu
 import json
 import math
+import scipy
 
 import numpy as np
 
@@ -268,7 +269,7 @@ def make_map(seed_count):
 def rotate_map(coverage_map_np, international_date_line=None):
     if international_date_line is None:
         ocean_histogram = np.sum(coverage_map_np < LAND, axis=0)
-        n = utility.max_index_with_neighboring_avg(ocean_histogram, window_size=100)
+        n = max_index_with_neighboring_avg(ocean_histogram, window_size=100)
     else:
         n = international_date_line
 
@@ -338,8 +339,8 @@ def main():
     histogram_plot('low_altitude_np_histogram', low_altitude_np)
     histogram_plot('high_altitude_np_histogram', high_altitude_np)
 
-    blurred_low_altitude_np = utility.gaussian_blur(low_altitude_np, configuration.get('generator.world.deformation.blurring.low_altitude', 11))
-    blurred_high_altitude_np = utility.gaussian_blur(high_altitude_np, configuration.get('generator.world.deformation.blurring.high_altitude', 11))
+    blurred_low_altitude_np = gaussian_blur(low_altitude_np, configuration.get('generator.world.deformation.blurring.low_altitude', 11))
+    blurred_high_altitude_np = gaussian_blur(high_altitude_np, configuration.get('generator.world.deformation.blurring.high_altitude', 11))
 
     print(f'blurred_low_altitude_np sum: {np.sum(blurred_low_altitude_np)} -- contains NaN: {np.any(np.isnan(blurred_low_altitude_np))}')
     print(f'blurred_high_altitude_np sum: {np.sum(blurred_high_altitude_np)} -- contains NaN: {np.any(np.isnan(blurred_high_altitude_np))}')

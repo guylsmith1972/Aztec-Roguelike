@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fe791785-016e-4373-ad73-cb7f79ace54a</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>main.py</StartupFile>
+    <StartupFile>voronoi.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,6 +23,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Assets\Shaders\render\sprite_renderer_fragment.glsl" />
+    <Compile Include="erosion.py" />
+    <Compile Include="geotiff.py" />
     <Compile Include="Scratch\biomes.py" />
     <Compile Include="constants.py" />
     <Compile Include="gpu_vertex_array.py" />
@@ -49,6 +51,8 @@
     <Compile Include="population_center.py" />
     <Compile Include="Scratch\constraints.py" />
     <Compile Include="prolog.py" />
+    <Compile Include="Scratch\data_generator.py" />
+    <Compile Include="Scratch\dinosaur.py" />
     <Compile Include="Scratch\som.py" />
     <Compile Include="Scratch\treegen.py" />
     <Compile Include="Scratch\wfc.py" />
@@ -63,9 +67,11 @@
     <Compile Include="Scratch\turtle3d.py" />
     <Compile Include="utility.py" />
     <Compile Include="NonProduction\BackBurner\voronoi.py" />
+    <Compile Include="voronoi.py" />
     <Compile Include="world.py" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Shaders\compute\erosion.glsl" />
     <Content Include="Assets\Shaders\render\sprite_renderer_vertex.glsl" />
     <Content Include="Assets\Source\categories.pl" />
     <Content Include="Assets\Source\crafting.pl" />
@@ -232,6 +238,7 @@
     <Content Include="Assets\Sprites\Vegetation\spritesheet_96_96.png" />
     <Content Include="colors_per_line.json" />
     <Content Include="color_map.json" />
+    <Content Include="heightmaps\mt_desert.tif" />
     <Content Include="NonProduction\BackBurner\Shaders\erosion_old.glsl" />
     <Content Include="NonProduction\BackBurner\Shaders\erosion.glsl" />
     <Content Include="Assets\Shaders\compute\noisy_voronoi.glsl" />
@@ -259,6 +266,7 @@
     <Folder Include="Assets\Sprites\Terrain\originals\" />
     <Folder Include="Assets\Sprites\Vegetation\" />
     <Folder Include="Assets\Sprites\Vegetation\originals\" />
+    <Folder Include="heightmaps\" />
     <Folder Include="NonProduction\BackBurner\" />
     <Folder Include="NonProduction\BackBurner\Shaders\" />
     <Folder Include="NonProduction\" />
